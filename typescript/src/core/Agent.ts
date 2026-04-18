@@ -26,6 +26,16 @@ export class Agent {
 
     // 循环执行每一个工具调用
     for (const call of toolCalls) {
+      if (call.args && call.args._parse_error) {
+        results.push({
+          id: call.id,
+          name: call.name,
+          result: `[Agent 内部错误] 你输出的工具参数 JSON 格式不合法，无法解析。\n请检查是否忘记转义换行符、引号等特殊字符。\n你输出的原始参数为:\n${call.args._raw_arguments}`,
+          isError: true,
+        });
+        continue;
+      }
+
       const tool = tools.find((t: any) => t.name === call.name);
       
       if (!tool) {

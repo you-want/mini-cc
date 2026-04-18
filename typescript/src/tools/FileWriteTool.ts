@@ -52,6 +52,9 @@ export class FileWriteTool {
   public async execute(args: { file_path: string; content: string }): Promise<string> {
     try {
       const { file_path, content } = args;
+      if (!file_path) {
+        return `写入文件时出错：file_path 不能为空`;
+      }
       console.log(`[FileWriteTool] 正在写入文件: ${file_path}`);
       
       // 解析文件所在的目录，以备创建可能不存在的目录层级

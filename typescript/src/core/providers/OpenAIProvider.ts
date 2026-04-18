@@ -80,11 +80,19 @@ export class OpenAIProvider implements LLMProvider {
         for (const tc of delta.tool_calls) {
           if (!toolCallsMap[tc.index]) {
             toolCallsMap[tc.index] = {
-              id: tc.id,
+              id: tc.id || `call_${Date.now()}_${tc.index}`, // 兜底生成 id
               type: 'function',
               function: { name: tc.function?.name || '', arguments: '' }
             };
+          } else {
+            if (tc.id) {
+              toolCallsMap[tc.index].id = tc.id;
+            }
+            if (tc.function?.name) {
+               toolCallsMap[tc.index].function.name += tc.function.name;
+            }
           }
+          
           if (tc.function?.arguments) {
             toolCallsMap[tc.index].function.arguments += tc.function.arguments;
           }
@@ -101,14 +109,23 @@ export class OpenAIProvider implements LLMProvider {
     const toolCalls = Object.values(toolCallsMap).map((t: any) => {
       let args = {};
       try {
-        args = JSON.parse(t.function.arguments || '{}');
+        // 尝试修复一些常见的 JSON 格式错误（比如 Qwen 容易在 content 里直接输出未转义的换行）
+        let rawArgs = t.function.arguments || '{}';
+        // 简单的控制字符转义处理，防止 JSON.parse 崩溃
+        rawArgs = rawArgs.replace(/\n/g, '\\\\n').replace(/\r/g, '\\\\r').replace(/\t/g, '\\\\t');
+        // 有些时候模型会错误地把转义的 \\n 变成实际的换行，上面的正则会把它变成 \\n。
+        // 但更稳妥的做法是，如果是标准的合法 JSON，不应该有物理换行，如果有物理换行说明生成有瑕疵。
+        args = JSON.parse(rawArgs);
       } catch (e) {
-        console.error(`\n[OpenAIProvider] 工具参数解析失败: ${t.function.arguments}`);
+        console.error(`\n[OpenAIProvider] 工具参数 JSON 解析失败。尝试使用原始参数...`);
+        // 如果依然失败，给一个特殊标记，让 Agent 能够反馈给模型
+        args = { _parse_error: true, _raw_arguments: t.function.arguments };
       }
       return { id: t.id, name: t.function.name, args };
     });
 
     if (toolCalls.length > 0) {
+      // 只有当有工具调用时，才挂载 tool_calls 字段
       assistantMsg.tool_calls = Object.values(toolCallsMap);
     }
     

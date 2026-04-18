@@ -48,6 +48,9 @@ export class FileReadTool {
   public async execute(args: { file_path: string }): Promise<string> {
     try {
       const { file_path } = args;
+      if (!file_path) {
+        return `读取文件时出错：file_path 不能为空`;
+      }
       console.log(`[FileReadTool] 正在读取文件: ${file_path}`);
       
       // 读取文件并以 utf-8 编码转换为字符串

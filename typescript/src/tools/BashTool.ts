@@ -53,6 +53,9 @@ export class BashTool {
   public async execute(args: { command: string }): Promise<string> {
     try {
       const { command } = args;
+      if (!command) {
+        return `执行命令时出错: command 不能为空`;
+      }
       console.log(`[BashTool] 正在执行命令: ${command}`);
       
       // 在当前工作目录执行命令
