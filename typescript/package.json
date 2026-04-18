@@ -1,0 +1,28 @@
+{
+  "name": "mini-claude-code",
+  "version": "1.0.0",
+  "description": "A lightweight version of Claude Code built with TypeScript, supporting multiple LLMs (Claude, Qwen, DeepSeek, etc.)",
+  "main": "dist/index.js",
+  "bin": {
+    "mini-cc": "dist/index.js"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.1",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.7",
+    "inquirer": "^8.2.6",
+    "openai": "^6.34.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.10",
+    "@types/node": "^22.13.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
