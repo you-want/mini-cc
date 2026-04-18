@@ -1,7 +1,7 @@
 {
   "name": "mini-cc",
   "version": "1.0.0",
-  "description": "A lightweight version of Claude Code built with TypeScript, supporting multiple LLMs (Claude, Qwen, DeepSeek, etc.)",
+  "description": "A lightweight AI coding agent built with TypeScript, supporting multiple LLMs (Anthropic, Qwen, DeepSeek, etc.)",
   "main": "dist/index.js",
   "bin": {
     "mini-cc": "dist/index.js"

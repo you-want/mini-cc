@@ -1,8 +1,8 @@
-# Mini Claude Code (Mini-CC)
+# mini-cc
 
-Mini Claude Code 是一个**多语言实现**的轻量级 Claude Code 克隆版项目。
+这是一个轻量级的 AI 编程 Agent 核心框架实现，完全使用 TypeScript 编写。
 
-本项目旨在展示大语言模型（如 Claude 3.7 Sonnet、DeepSeek、通义千问、Qwen、Kimi 等）如何通过 **Tool Use（工具调用）** 与本地系统进行交互，从而充当一个强大的自主编程助手。
+由于部分商标保护和合规原因，本项目已更名为 **mini-cc**（或者 OmniCoder 等泛化名称）。它支持多模型提供商（Anthropic、OpenAI 以及所有兼容 OpenAI 接口的模型如 Qwen、DeepSeek 等），提供读取文件、写入文件和执行 Bash 终端命令的能力。
 
 通过本项目，你可以学习到 Agent 的核心事件循环、工具定义与分发、以及多模型的适配。
 

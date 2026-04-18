@@ -1,8 +1,8 @@
-# Mini Claude Code (TypeScript)
+# mini-cc
 
-这是一个用 TypeScript 实现的轻量级版本的 Claude Code。
+这是一个轻量级的 AI 编程助手实现，灵感来源于业界优秀的 AI 代码助手。它通过 TypeScript 和面向对象设计，提供了强大的本地代码操作和终端执行能力。
 
-它旨在展示大语言模型（如 Claude 3.7 Sonnet、DeepSeek、通义千问、Qwen、Kimi 等）如何通过 Tool Use（工具调用）与本地系统进行交互，从而充当一个强大的自主编程助手。
+本实现完全基于本地代码重写，并且移除了特定厂商的命名和敏感商标，定位于通用的 `AI 编程助手 Agent` 核心框架。
 
 ## 核心特性
 
