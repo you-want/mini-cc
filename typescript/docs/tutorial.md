@@ -1,6 +1,6 @@
 # 从零手写一个简易版 Claude Code (TypeScript 实现指南)
 
-欢迎来到 **mini-claude-code** 的实现教程！
+欢迎来到 **mini-cc** 的实现教程！
 
 这篇教程将带你一步步拆解并搭建一个具备**工具调用 (Tool Use)** 能力的本地命令行 AI 编程助手。
 

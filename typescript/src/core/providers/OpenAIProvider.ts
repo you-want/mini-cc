@@ -14,7 +14,7 @@ export class OpenAIProvider implements LLMProvider {
     // 初始化系统提示词
     this.messages.push({
       role: 'system',
-      content: '你是一个名为 mini-claude-code 的高级 AI 编程助手。你拥有读取文件、写入文件和执行终端命令的权限。你的目标是帮助用户解决复杂的软件工程问题。在分析和操作时，请尽可能保持严谨，使用所提供的工具。\n\n【默认输出目录】\n如果用户要求你创建、生成、输出代码或文件，但没有明确指明输出目录，请务必默认将这些内容输出到相对于当前工作目录的上一级目录下的 `test_file` 文件夹中（即 `../test_file` 目录下）。如果该目录不存在，请先使用终端命令创建它。'
+      content: '你是一个名为 mini-cc 的高级 AI 编程助手。你拥有读取文件、写入文件和执行终端命令的权限。你的目标是帮助用户解决复杂的软件工程问题。在分析和操作时，请尽可能保持严谨，使用所提供的工具。\n\n【默认输出目录】\n如果用户要求你创建、生成、输出代码或文件，但没有明确指明输出目录，请务必默认将这些内容输出到相对于当前工作目录的上一级目录下的 `test_file` 文件夹中（即 `../test_file` 目录下）。注意：写入文件时如果目录不存在，FileWriteTool 会自动为你创建，请不要使用终端命令手动去 mkdir 创建目录。'
     });
   }
 
@@ -27,6 +27,19 @@ export class OpenAIProvider implements LLMProvider {
         parameters: t.inputSchema as any,
       }
     }));
+  }
+
+  /**
+   * 修复模型输出中常见的 JSON 格式问题
+   * 某些模型（如 Qwen）可能在工具参数中输出未正确转义的控制字符
+   */
+  private fixJsonString(raw: string): string {
+    // 将实际的换行符、回车符、制表符转义为 JSON 字符串形式
+    // 注意：在 JS 字符串中 '\\n' 表示反斜杠 + n，这正是 JSON 需要的转义形式
+    return raw
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
   }
 
   private async createMessage(onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> {
@@ -100,6 +113,9 @@ export class OpenAIProvider implements LLMProvider {
       }
     }
 
+    // 确保流输出结束后有一个换行符，防止后续的控制台输出粘连在一起
+    onTextResponse('\n', false);
+
     // 维持对话上下文，将助手的回复存入记录
     const assistantMsg: OpenAI.Chat.ChatCompletionMessageParam = {
       role: 'assistant',
@@ -109,15 +125,18 @@ export class OpenAIProvider implements LLMProvider {
     const toolCalls = Object.values(toolCallsMap).map((t: any) => {
       let args = {};
       try {
-        // 尝试修复一些常见的 JSON 格式错误（比如 Qwen 容易在 content 里直接输出未转义的换行）
         let rawArgs = t.function.arguments || '{}';
-        // 简单的控制字符转义处理，防止 JSON.parse 崩溃
-        rawArgs = rawArgs.replace(/\n/g, '\\\\n').replace(/\r/g, '\\\\r').replace(/\t/g, '\\\\t');
-        // 有些时候模型会错误地把转义的 \\n 变成实际的换行，上面的正则会把它变成 \\n。
-        // 但更稳妥的做法是，如果是标准的合法 JSON，不应该有物理换行，如果有物理换行说明生成有瑕疵。
-        args = JSON.parse(rawArgs);
+        
+        // 尝试直接解析
+        try {
+          args = JSON.parse(rawArgs);
+        } catch {
+          // 如果直接解析失败，尝试修复常见的 JSON 格式问题
+          rawArgs = this.fixJsonString(rawArgs);
+          args = JSON.parse(rawArgs);
+        }
       } catch (e) {
-        console.error(`\n[OpenAIProvider] 工具参数 JSON 解析失败。尝试使用原始参数...`);
+        console.error(`\n[OpenAIProvider] 工具参数 JSON 解析失败。原始参数:\n${t.function.arguments}`);
         // 如果依然失败，给一个特殊标记，让 Agent 能够反馈给模型
         args = { _parse_error: true, _raw_arguments: t.function.arguments };
       }

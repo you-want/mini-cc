@@ -1,5 +1,5 @@
 {
-  "name": "mini-claude-code",
+  "name": "mini-cc",
   "version": "1.0.0",
   "description": "A lightweight version of Claude Code built with TypeScript, supporting multiple LLMs (Claude, Qwen, DeepSeek, etc.)",
   "main": "dist/index.js",
