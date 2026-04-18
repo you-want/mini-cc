@@ -10,7 +10,7 @@ const execAsync = promisify(exec);
  * BashTool
  * 
  * 作用：允许模型在当前操作系统上执行 Shell 命令。
- * 这是一个核心工具，使得 Claude Code 具备了执行测试、安装依赖、查看系统状态等能力。
+ * 这是一个核心工具，使得 CC 具备了执行测试、安装依赖、查看系统状态等能力。
  */
 export class BashTool {
   /**
