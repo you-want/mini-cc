@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,9 +124,13 @@
             transform: scaleX(1);
             transform-origin: left;
         }
+
+        /* i18n logic */
+        body.lang-zh [data-lang="en"] { display: none !important; }
+        body.lang-en [data-lang="zh"] { display: none !important; }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col font-sans selection:bg-accent selection:text-dark">
+<body class="lang-en antialiased min-h-screen flex flex-col font-sans selection:bg-accent selection:text-dark">
 
     <!-- Navigation -->
     <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-sm border-b border-[#333]">
@@ -137,12 +141,32 @@
                     <span class="font-mono font-bold text-xl tracking-tighter uppercase">MINI-CC</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8 font-mono text-sm">
-                    <a href="#features" class="text-gray-400 hover:text-white transition-colors nav-link">FEATURES</a>
-                    <a href="#languages" class="text-gray-400 hover:text-white transition-colors nav-link">LANGUAGES</a>
-                    <a href="#docs" class="text-gray-400 hover:text-white transition-colors nav-link">DOCS</a>
+                    <a href="#features" class="text-gray-400 hover:text-white transition-colors nav-link">
+                        <span data-lang="en">FEATURES</span>
+                        <span data-lang="zh">核心特性</span>
+                    </a>
+                    <a href="#languages" class="text-gray-400 hover:text-white transition-colors nav-link">
+                        <span data-lang="en">LANGUAGES</span>
+                        <span data-lang="zh">多语言支持</span>
+                    </a>
+                    <a href="#docs" class="text-gray-400 hover:text-white transition-colors nav-link">
+                        <span data-lang="en">DOCS</span>
+                        <span data-lang="zh">文档</span>
+                    </a>
                     <a href="https://github.com/you-want/mini-cc" target="_blank" class="px-5 py-2 border border-[#333] hover:border-accent hover:text-accent transition-colors uppercase">
                         GitHub ↗
                     </a>
+                    <button id="lang-toggle" class="px-3 py-1 border border-[#333] hover:border-accent hover:text-accent transition-colors font-mono text-xs uppercase focus:outline-none">
+                        <span data-lang="en">中文</span>
+                        <span data-lang="zh">EN</span>
+                    </button>
+                </div>
+                <!-- Mobile lang toggle -->
+                <div class="md:hidden flex items-center">
+                    <button id="lang-toggle-mobile" class="px-3 py-1 border border-[#333] hover:border-accent hover:text-accent transition-colors font-mono text-xs uppercase focus:outline-none">
+                        <span data-lang="en">中</span>
+                        <span data-lang="zh">EN</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -155,22 +179,38 @@
                 <div class="max-w-3xl">
                     <div class="font-mono text-accent text-sm mb-6 flex items-center space-x-4">
                         <span class="block w-12 h-px bg-accent"></span>
-                        <span>VERSION 1.0 // MULTI-LANGUAGE AGENT FRAMEWORK</span>
+                        <span data-lang="en">VERSION 1.0 // MULTI-LANGUAGE AGENT FRAMEWORK</span>
+                        <span data-lang="zh">1.0 版本 // 多语言智能体框架</span>
                     </div>
-                    <h1 class="huge-text font-bold text-white mb-8 uppercase">
+                    
+                    <!-- EN Title -->
+                    <h1 data-lang="en" class="huge-text font-bold text-white mb-8 uppercase">
                         Build <br />
                         <span class="text-transparent" style="-webkit-text-stroke: 1px #E5E5E5;">Agents</span> <br />
                         Faster.
                     </h1>
-                    <p class="text-xl text-gray-400 max-w-xl font-light mb-10">
+                    <!-- ZH Title -->
+                    <h1 data-lang="zh" class="huge-text font-bold text-white mb-8 uppercase" style="font-family: 'Space Grotesk', sans-serif;">
+                        极速构建 <br />
+                        <span class="text-transparent" style="-webkit-text-stroke: 1px #E5E5E5;">智能体</span> <br />
+                        框架。
+                    </h1>
+
+                    <p data-lang="en" class="text-xl text-gray-400 max-w-xl font-light mb-10">
                         A lightweight, multi-language AI agent framework with native tool use, SSE streaming, and a ReAct event loop. No bloated abstractions.
                     </p>
+                    <p data-lang="zh" class="text-xl text-gray-400 max-w-xl font-light mb-10" style="letter-spacing: 0.05em;">
+                        一个轻量级、多语言的 AI 智能体框架，原生支持工具调用、SSE 流式输出和 ReAct 事件循环。拒绝臃肿抽象。
+                    </p>
+
                     <div class="flex flex-wrap gap-6">
                         <a href="https://github.com/you-want/mini-cc" target="_blank" class="brutal-button">
-                            Clone Repository
+                            <span data-lang="en">Clone Repository</span>
+                            <span data-lang="zh">克隆代码库</span>
                         </a>
                         <a href="#getting-started" class="brutal-button-outline">
-                            View Documentation
+                            <span data-lang="en">View Documentation</span>
+                            <span data-lang="zh">查看文档</span>
                         </a>
                     </div>
                 </div>
@@ -189,32 +229,61 @@
     <section id="features" class="py-32 border-b border-[#333]">
         <div class="max-w-[1400px] mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-start mb-20 gap-8">
-                <h2 class="text-5xl font-bold uppercase tracking-tighter">Core<br />Mechanics</h2>
-                <p class="text-gray-400 max-w-md font-mono text-sm border-l border-accent pl-6 py-2">
+                <h2 data-lang="en" class="text-5xl font-bold uppercase tracking-tighter">Core<br />Mechanics</h2>
+                <h2 data-lang="zh" class="text-5xl font-bold uppercase tracking-tighter">核心<br />机制</h2>
+                
+                <p data-lang="en" class="text-gray-400 max-w-md font-mono text-sm border-l border-accent pl-6 py-2">
                     A fully functional agent prototype built for deep understanding. Not just a toy, but a robust architecture.
+                </p>
+                <p data-lang="zh" class="text-gray-400 max-w-md font-mono text-sm border-l border-accent pl-6 py-2">
+                    为深度理解而构建的全功能智能体原型。不仅仅是玩具，而是健壮的架构。
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="brutal-card p-8 flex flex-col h-full">
                     <div class="text-4xl font-mono text-accent mb-6">01</div>
-                    <h3 class="text-2xl font-bold mb-4">Multi-Model</h3>
-                    <p class="text-gray-400 text-sm mt-auto">Support for Anthropic and OpenAI-compatible interfaces (DeepSeek, Qwen, Kimi). Seamless switching via env vars.</p>
+                    <h3 class="text-2xl font-bold mb-4">
+                        <span data-lang="en">Multi-Model</span>
+                        <span data-lang="zh">多模型支持</span>
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-auto">
+                        <span data-lang="en">Support for Anthropic and OpenAI-compatible interfaces (DeepSeek, Qwen, Kimi). Seamless switching via env vars.</span>
+                        <span data-lang="zh">支持 Anthropic 和兼容 OpenAI 的接口 (DeepSeek, Qwen, Kimi)。通过环境变量无缝切换。</span>
+                    </p>
                 </div>
                 <div class="brutal-card p-8 flex flex-col h-full">
                     <div class="text-4xl font-mono text-accent mb-6">02</div>
-                    <h3 class="text-2xl font-bold mb-4">Streaming</h3>
-                    <p class="text-gray-400 text-sm mt-auto">Native SSE streaming with real-time reasoning content (thinking process) display for advanced models.</p>
+                    <h3 class="text-2xl font-bold mb-4">
+                        <span data-lang="en">Streaming</span>
+                        <span data-lang="zh">流式输出</span>
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-auto">
+                        <span data-lang="en">Native SSE streaming with real-time reasoning content (thinking process) display for advanced models.</span>
+                        <span data-lang="zh">原生 SSE 流式输出，支持高级模型实时展示推理过程（思维链）。</span>
+                    </p>
                 </div>
                 <div class="brutal-card p-8 flex flex-col h-full">
                     <div class="text-4xl font-mono text-accent mb-6">03</div>
-                    <h3 class="text-2xl font-bold mb-4">Tool Use</h3>
-                    <p class="text-gray-400 text-sm mt-auto">Built-in BashTool, FileReadTool, and FileWriteTool for native environment interaction and code modification.</p>
+                    <h3 class="text-2xl font-bold mb-4">
+                        <span data-lang="en">Tool Use</span>
+                        <span data-lang="zh">工具调用</span>
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-auto">
+                        <span data-lang="en">Built-in BashTool, FileReadTool, and FileWriteTool for native environment interaction and code modification.</span>
+                        <span data-lang="zh">内置 BashTool、FileReadTool 和 FileWriteTool，实现原生环境交互与代码修改。</span>
+                    </p>
                 </div>
                 <div class="brutal-card p-8 flex flex-col h-full">
                     <div class="text-4xl font-mono text-accent mb-6">04</div>
-                    <h3 class="text-2xl font-bold mb-4">ReAct Loop</h3>
-                    <p class="text-gray-400 text-sm mt-auto">Autonomous message event loop allowing multiple tool invocations until the task is marked complete.</p>
+                    <h3 class="text-2xl font-bold mb-4">
+                        <span data-lang="en">ReAct Loop</span>
+                        <span data-lang="zh">ReAct 循环</span>
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-auto">
+                        <span data-lang="en">Autonomous message event loop allowing multiple tool invocations until the task is marked complete.</span>
+                        <span data-lang="zh">自主消息事件循环，允许连续多次调用工具，直至任务标记完成。</span>
+                    </p>
                 </div>
             </div>
             
@@ -232,8 +301,11 @@
     <section id="languages" class="py-32 border-b border-[#333] bg-[#0A0A0A]">
         <div class="max-w-[1400px] mx-auto px-6">
             <div class="mb-20">
-                <h2 class="text-5xl font-bold uppercase tracking-tighter mb-6">Four<br />Languages.</h2>
-                <p class="text-gray-400 max-w-xl text-lg">One unified architecture implemented across four major ecosystems. Learn agent concepts in the language you know best.</p>
+                <h2 data-lang="en" class="text-5xl font-bold uppercase tracking-tighter mb-6">Four<br />Languages.</h2>
+                <h2 data-lang="zh" class="text-5xl font-bold uppercase tracking-tighter mb-6">四大<br />语言。</h2>
+                
+                <p data-lang="en" class="text-gray-400 max-w-xl text-lg">One unified architecture implemented across four major ecosystems. Learn agent concepts in the language you know best.</p>
+                <p data-lang="zh" class="text-gray-400 max-w-xl text-lg">同一套统一架构在四大主流生态系统中的实现。用你最熟悉的语言学习智能体概念。</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -242,9 +314,15 @@
                     <div class="absolute top-0 right-0 p-4 font-mono text-6xl font-bold text-[#111] group-hover:text-[#222] transition-colors -z-10">TS</div>
                     <div class="flex justify-between items-center mb-12">
                         <h3 class="text-3xl font-bold">TypeScript</h3>
-                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">COMPLETED</span>
+                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">
+                            <span data-lang="en">COMPLETED</span>
+                            <span data-lang="zh">已完成</span>
+                        </span>
                     </div>
-                    <p class="text-gray-400 mb-6 min-h-[60px]">Native implementation using pure functional architecture. Flawless streaming parsing and tool scheduling.</p>
+                    <p class="text-gray-400 mb-6 min-h-[60px]">
+                        <span data-lang="en">Native implementation using pure functional architecture. Flawless streaming parsing and tool scheduling.</span>
+                        <span data-lang="zh">使用纯函数式架构的原生实现。完美的流式解析与工具调度。</span>
+                    </p>
                     <div class="w-full h-1 bg-[#222] group-hover:bg-blue-500 transition-colors"></div>
                 </div>
 
@@ -253,9 +331,15 @@
                     <div class="absolute top-0 right-0 p-4 font-mono text-6xl font-bold text-[#111] group-hover:text-[#222] transition-colors -z-10">PY</div>
                     <div class="flex justify-between items-center mb-12">
                         <h3 class="text-3xl font-bold">Python</h3>
-                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">COMPLETED</span>
+                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">
+                            <span data-lang="en">COMPLETED</span>
+                            <span data-lang="zh">已完成</span>
+                        </span>
                     </div>
-                    <p class="text-gray-400 mb-6 min-h-[60px]">Pythonic asynchronous agent using asyncio and strong type hinting.</p>
+                    <p class="text-gray-400 mb-6 min-h-[60px]">
+                        <span data-lang="en">Pythonic asynchronous agent using asyncio and strong type hinting.</span>
+                        <span data-lang="zh">使用 asyncio 和强类型提示的 Pythonic 异步智能体。</span>
+                    </p>
                     <div class="w-full h-1 bg-[#222] group-hover:bg-yellow-500 transition-colors"></div>
                 </div>
 
@@ -264,9 +348,15 @@
                     <div class="absolute top-0 right-0 p-4 font-mono text-6xl font-bold text-[#111] group-hover:text-[#222] transition-colors -z-10">GO</div>
                     <div class="flex justify-between items-center mb-12">
                         <h3 class="text-3xl font-bold">Go</h3>
-                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">COMPLETED</span>
+                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">
+                            <span data-lang="en">COMPLETED</span>
+                            <span data-lang="zh">已完成</span>
+                        </span>
                     </div>
-                    <p class="text-gray-400 mb-6 min-h-[60px]">Extreme concurrency and performance utilizing Goroutines and Channels.</p>
+                    <p class="text-gray-400 mb-6 min-h-[60px]">
+                        <span data-lang="en">Extreme concurrency and performance utilizing Goroutines and Channels.</span>
+                        <span data-lang="zh">利用 Goroutines 和 Channels 达到极致并发与性能。</span>
+                    </p>
                     <div class="w-full h-1 bg-[#222] group-hover:bg-cyan-500 transition-colors"></div>
                 </div>
 
@@ -275,9 +365,15 @@
                     <div class="absolute top-0 right-0 p-4 font-mono text-6xl font-bold text-[#111] group-hover:text-[#222] transition-colors -z-10">RS</div>
                     <div class="flex justify-between items-center mb-12">
                         <h3 class="text-3xl font-bold">Rust</h3>
-                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">COMPLETED</span>
+                        <span class="font-mono text-xs bg-accent text-dark px-2 py-1 font-bold">
+                            <span data-lang="en">COMPLETED</span>
+                            <span data-lang="zh">已完成</span>
+                        </span>
                     </div>
-                    <p class="text-gray-400 mb-6 min-h-[60px]">Memory safe, zero-cost abstractions, compiled to native binaries with minimal footprint.</p>
+                    <p class="text-gray-400 mb-6 min-h-[60px]">
+                        <span data-lang="en">Memory safe, zero-cost abstractions, compiled to native binaries with minimal footprint.</span>
+                        <span data-lang="zh">内存安全，零成本抽象，编译为体积最小的原生二进制文件。</span>
+                    </p>
                     <div class="w-full h-1 bg-[#222] group-hover:bg-orange-500 transition-colors"></div>
                 </div>
             </div>
@@ -291,7 +387,10 @@
                 
                 <!-- Capabilities -->
                 <div class="lg:col-span-7">
-                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">Capabilities</h2>
+                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
+                        <span data-lang="en">Capabilities</span>
+                        <span data-lang="zh">能力展示</span>
+                    </h2>
                     
                     <div class="space-y-12">
                         <div class="border border-[#333] bg-surface">
@@ -301,8 +400,14 @@
                             </div>
                             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                                 <div>
-                                    <h3 class="text-2xl font-bold mb-4">Zero to App</h3>
-                                    <p class="text-gray-400 text-sm">"Write a Gomoku web game." The agent autonomously thinks, creates files, writes HTML/JS/CSS, and delivers a playable app.</p>
+                                    <h3 class="text-2xl font-bold mb-4">
+                                        <span data-lang="en">Zero to App</span>
+                                        <span data-lang="zh">从零构建应用</span>
+                                    </h3>
+                                    <p class="text-gray-400 text-sm">
+                                        <span data-lang="en">"Write a Gomoku web game." The agent autonomously thinks, creates files, writes HTML/JS/CSS, and delivers a playable app.</span>
+                                        <span data-lang="zh">"写一个五子棋网页游戏。" 智能体自主思考、创建文件、编写 HTML/JS/CSS，最终交付可玩的应用。</span>
+                                    </p>
                                 </div>
                                 <img src="images/wuziqi.png" alt="Gomoku" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all">
                             </div>
@@ -318,8 +423,14 @@
                                     <img src="images/buddy.png" alt="Buddy" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all">
                                 </div>
                                 <div class="order-1 md:order-2">
-                                    <h3 class="text-2xl font-bold mb-4">CLI Pet</h3>
-                                    <p class="text-gray-400 text-sm">Type `/buddy` in the terminal. Shows off rich text rendering and PRNG capabilities directly in the CLI.</p>
+                                    <h3 class="text-2xl font-bold mb-4">
+                                        <span data-lang="en">CLI Pet</span>
+                                        <span data-lang="zh">终端宠物</span>
+                                    </h3>
+                                    <p class="text-gray-400 text-sm">
+                                        <span data-lang="en">Type `/buddy` in the terminal. Shows off rich text rendering and PRNG capabilities directly in the CLI.</span>
+                                        <span data-lang="zh">在终端输入 `/buddy`。直接在命令行中展示富文本渲染和伪随机生成能力。</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -328,47 +439,77 @@
 
                 <!-- Documentation -->
                 <div class="lg:col-span-5">
-                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">Documentation</h2>
+                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
+                        <span data-lang="en">Documentation</span>
+                        <span data-lang="zh">项目文档</span>
+                    </h2>
                     
                     <div class="flex flex-col border border-[#333] bg-surface">
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">00.</span>
-                            <span class="font-bold uppercase tracking-tight">Project Outline</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">Project Outline</span>
+                                <span data-lang="zh">项目大纲</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">01.</span>
-                            <span class="font-bold uppercase tracking-tight">Core Architecture</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">Core Architecture</span>
+                                <span data-lang="zh">核心架构</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">02.</span>
-                            <span class="font-bold uppercase tracking-tight">Query Engine</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">Query Engine</span>
+                                <span data-lang="zh">查询引擎</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">03.</span>
-                            <span class="font-bold uppercase tracking-tight">Tool System</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">Tool System</span>
+                                <span data-lang="zh">工具系统</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">04.</span>
-                            <span class="font-bold uppercase tracking-tight">Memory</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">Memory</span>
+                                <span data-lang="zh">记忆管理</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">05.</span>
-                            <span class="font-bold uppercase tracking-tight">MCP & Plugins</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">MCP & Plugins</span>
+                                <span data-lang="zh">MCP 与插件</span>
+                            </span>
                         </a>
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">06.</span>
-                            <span class="font-bold uppercase tracking-tight">UI & Ink</span>
+                            <span class="font-bold uppercase tracking-tight">
+                                <span data-lang="en">UI & Ink</span>
+                                <span data-lang="zh">UI 与 Ink</span>
+                            </span>
                         </a>
                     </div>
 
                     <div class="mt-12 p-8 border border-[#333] bg-accent text-dark">
-                        <h3 class="text-2xl font-bold uppercase mb-4">Quick Start</h3>
+                        <h3 class="text-2xl font-bold uppercase mb-4">
+                            <span data-lang="en">Quick Start</span>
+                            <span data-lang="zh">快速开始</span>
+                        </h3>
                         <div class="bg-dark p-4 font-mono text-sm text-white mb-4 overflow-x-auto">
                             $ git clone https://github.com/you-want/mini-cc<br/>
                             $ cd mini-cc<br/>
                             $ cp .env.example .env
                         </div>
-                        <p class="font-medium">Configure your API keys in .env and start exploring the core loops.</p>
+                        <p class="font-medium">
+                            <span data-lang="en">Configure your API keys in .env and start exploring the core loops.</span>
+                            <span data-lang="zh">在 .env 中配置你的 API 密钥，开始探索核心循环。</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -376,8 +517,36 @@
     </section>
 
     <footer class="py-12 border-t border-[#333] text-center font-mono text-sm text-gray-500">
-        <p>mini-cc // A lightweight agent framework. MIT License.</p>
+        <p>
+            <span data-lang="en">mini-cc // A lightweight agent framework. MIT License.</span>
+            <span data-lang="zh">mini-cc // 一个轻量级智能体框架。MIT 协议。</span>
+        </p>
     </footer>
 
+    <!-- Language Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('minicc-lang') || 'zh'; // Default to Chinese
+            document.body.className = document.body.className.replace(/lang-\w+/, 'lang-' + savedLang);
+            document.documentElement.lang = savedLang === 'zh' ? 'zh-CN' : 'en';
+
+            const toggleLang = () => {
+                const isEn = document.body.classList.contains('lang-en');
+                const newLang = isEn ? 'zh' : 'en';
+                
+                document.body.classList.remove('lang-en', 'lang-zh');
+                document.body.classList.add('lang-' + newLang);
+                document.documentElement.lang = newLang === 'zh' ? 'zh-CN' : 'en';
+                
+                localStorage.setItem('minicc-lang', newLang);
+            };
+
+            const toggleBtn = document.getElementById('lang-toggle');
+            const toggleBtnMobile = document.getElementById('lang-toggle-mobile');
+            
+            if (toggleBtn) toggleBtn.addEventListener('click', toggleLang);
+            if (toggleBtnMobile) toggleBtnMobile.addEventListener('click', toggleLang);
+        });
+    </script>
 </body>
 </html>
