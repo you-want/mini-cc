@@ -1,3 +1,4 @@
 openai
+anthropic
 python-dotenv
 colorama

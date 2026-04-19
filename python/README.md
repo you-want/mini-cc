@@ -1,6 +1,8 @@
 # 🐍 mini-cc (Python Edition)
 
-这是 `mini-cc` 智能体的 **Python 语言实现版本**。本项目旨在通过 Python 极简的脚本生态与 `asyncio` 异步特性，复刻 TypeScript 版本的全套 Agent 能力。
+这是 `mini-cc` 智能体的 **Python 语言实现版本**。
+
+本项目旨在通过 Python 极简的脚本生态与 `asyncio` 异步特性，复刻 TypeScript 版本的全套 Agent 能力。
 
 本项目同样遵循**纯函数式设计**与**无状态闭包**的理念，将大模型（LLM）、工具系统（Tool Use）和 Agent 事件循环高度解耦。
 
@@ -22,11 +24,19 @@
 
 ### 2. 安装依赖
 
-进入项目目录并安装所需的 Python 依赖包：
+进入项目目录，建议使用虚拟环境，并安装所需的 Python 依赖包：
 
 ```bash
 cd mini-cc/python
-pip install -r requirements.txt
+
+python3 --version && pip3 --version
+
+# 推荐：创建并激活虚拟环境 (可选)
+python3 -m venv venv
+source venv/bin/activate
+
+# 安装依赖
+pip3 install -r requirements.txt
 ```
 
 ### 3. 配置环境变量
@@ -49,7 +59,7 @@ MODEL_NAME="qwen-max"
 运行入口文件启动你的专属 AI 助手：
 
 ```bash
-python src/main.py
+python3 src/main.py
 ```
 
 启动后，在终端中会出现 `mini-cc>` 提示符，你就可以直接输入自然语言（例如：“帮我在上一级目录创建一个 index.html，写一个贪吃蛇游戏”）让它为你工作了！

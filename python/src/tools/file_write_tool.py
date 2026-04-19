@@ -1,6 +1,16 @@
+"""
+文件写入工具 (file_write_tool.py)
+===============================
+为 Agent 提供向本地写入文件的能力。
+支持自动创建缺失的父目录，以简化 Agent 的操作流程。
+"""
+
 import os
 
 async def execute_file_write(args: dict) -> str:
+    """
+    异步执行文件写入操作
+    """
     file_path = args.get("file_path")
     content = args.get("content")
     
@@ -10,10 +20,13 @@ async def execute_file_write(args: dict) -> str:
     print(f"[FileWriteTool] 正在写入文件: {file_path}")
     
     try:
+        # 获取目标文件的父目录路径
         dir_name = os.path.dirname(file_path)
+        # 自动创建不存在的父目录，相当于 mkdir -p
         if dir_name:
             os.makedirs(dir_name, exist_ok=True)
             
+        # 以 UTF-8 编码写入文件内容 (覆盖模式)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
             
