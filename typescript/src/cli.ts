@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 // 屏蔽 Node.js 21+ 关于 punycode 的弃用警告
+// 这样可以避免破坏命令行交互界面的视觉效果
 const originalEmit = process.emit;
 // @ts-ignore
 process.emit = function (name: string, data: any, ...args: any[]) {
@@ -16,10 +17,12 @@ process.emit = function (name: string, data: any, ...args: any[]) {
   return originalEmit.apply(process, [name, data, ...args]);
 };
 
-// Fast-path checking
+// 获取命令行参数
 const args = process.argv.slice(2);
 
-// Check if we hit a fast-path that doesn't need heavy imports
+// 【Fast-path 极速通道检查】
+// 这里的关键是不进行任何庞大的 `import` 操作，直接处理无需复杂逻辑的命令。
+// 这保证了像 `--version` 或 `--health` 这样的命令能实现“秒开”，0延迟。
 if (args.length > 0) {
   const cmd = args[0];
   if (cmd === '--version' || cmd === '-v') {
@@ -40,27 +43,33 @@ if (args.length > 0) {
   }
 }
 
-// 提前把用户的键盘输入存起来，防止卡顿时吞键
+// 【防吞键机制：早期输入捕获】
+// 因为后续加载 `main.ts` 和依赖可能需要几百毫秒。
+// 如果用户手快，在这期间敲击了键盘，就会被系统丢弃（吞键）。
+// 所以我们提前接管 stdin，将按键缓存起来。
 import { startCapturingEarlyInput } from './infrastructure/utils/earlyInput';
 startCapturingEarlyInput();
 
-// Parallel Pre-fetching pattern implementation
-// Kick off async tasks before loading heavy modules
+// 【并行预加载模式 (Parallel Pre-fetching)】
+// 在加载几十 MB 的重度依赖（如大模型 SDK、React等）之前，先把耗时的异步 I/O 任务抛到后台。
 const prefetchConfig = async () => {
-  // In a real app, this could be fetching AWS secrets or parsing global configs
-  // Simulate delay to show early input capturing usefulness
+  // 在真实应用中，这可能是从 AWS 读取密钥，或者解析全局配置文件。
+  // 这里我们模拟 300ms 的延迟，用来演示早期输入捕获的作用。
   await new Promise(resolve => setTimeout(resolve, 300));
   return { configLoaded: true };
 };
 
+// 立即触发 I/O 请求，不使用 await 阻塞主线程
 const prefetchPromise = prefetchConfig();
 
-// Dynamically import the heavy main module
-// This delays parsing and evaluating large dependencies until we are sure we need them
+// 【动态加载主模块】
+// 此时 Node.js 主线程开始解析庞大的依赖树，而底层的 libuv 线程池正在处理上面的 prefetchConfig I/O。
+// 两者并行进行，大大缩短了冷启动时间！
 import('./main')
   .then(async (mainModule) => {
-    // Wait for the parallel pre-fetch to finish before continuing
+    // 等主模块代码加载完成时，再等待预加载 I/O 任务的结果（可能早就完成了）
     const config = await prefetchPromise;
+    // 启动主应用
     mainModule.startApp(config);
   })
   .catch((err) => {

@@ -29,9 +29,10 @@ import { stopCapturingEarlyInput } from './infrastructure/utils/earlyInput';
 
 export async function startApp(prefetchConfig: any) {
   // 获取早期的用户输入，避免吞键
+  // 对应 01-architecture.md 里的 "Early Input Capture" 机制
   const earlyInput = stopCapturingEarlyInput();
 
-  // 触发 AppStart 钩子
+  // 触发 AppStart 生命周期钩子
   await globalHooks.trigger('AppStart', { prefetchConfig });
 
   // 处理 Fast-path：极速通道，用于无需加载大模型直接返回的情况（如 --version）
@@ -41,13 +42,14 @@ export async function startApp(prefetchConfig: any) {
     process.exit(0);
   }
 
-  // 初始化 dotenv 环境变量
+  // 初始化 dotenv 环境变量，加载 .env 文件中的配置
   dotenv.config();
 
   // 获取选择的大模型提供商（默认为 openai）
   const PROVIDER = (process.env.PROVIDER || 'openai').toLowerCase();
   let providerInstance: LLMProvider;
 
+  // 根据配置初始化不同的大模型服务商
   if (PROVIDER === 'openai') {
     const apiKey = process.env.OPENAI_API_KEY || '';
     const baseURL = process.env.OPENAI_BASE_URL; // 可选的 Base URL，支持兼容接口如 Qwen, DeepSeek, Kimi 等
@@ -61,7 +63,7 @@ export async function startApp(prefetchConfig: any) {
     console.log(chalk.gray(`[系统配置] 已选择 OpenAI 兼容模型，模型名称: ${modelName}`));
     providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
   } else {
-    // 默认使用 Anthropic
+    // 默认使用 Anthropic (Claude)
     const apiKey = process.env.ANTHROPIC_API_KEY || '';
     const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
 
@@ -74,19 +76,20 @@ export async function startApp(prefetchConfig: any) {
     providerInstance = createAnthropicProvider(apiKey, modelName);
   }
 
-  // 实例化核心的 Agent 处理器，并注入指定的 provider
+  // 实例化核心的 Agent 处理器，并将 provider 注入进去（依赖注入模式）
   const agent = createAgent(providerInstance);
 
   // 检查是否是无头模式（headless/print 模式）
+  // 无头模式用于在脚本中直接调用 mini-cc 并获取结果，不显示交互式 UI
   const isHeadless = process.argv.includes('-p') || process.argv.includes('--print');
   
   if (isHeadless) {
-    // Headless mode
-    // Read from stdin or arguments and exit
+    // 提取命令行中除了 -p/--print 以外的参数作为用户输入
     const inputArg = process.argv.slice(2).filter(arg => arg !== '-p' && arg !== '--print').join(' ');
     
     if (inputArg) {
       try {
+        // 直接调用 agent，将结果流式输出到 stdout，完成后退出
         await agent.chat(inputArg, (textChunk: string, isThinking?: boolean) => {
           if (!isThinking) {
             process.stdout.write(textChunk);
@@ -97,21 +100,21 @@ export async function startApp(prefetchConfig: any) {
         console.error(`\n[系统错误] ${error.message}\n`);
         process.exit(1);
       }
-      process.exit(0);
+      process.exit(0); // 执行完毕自动退出
     } else {
       console.error('在无头模式下需要提供输入参数。例如: mini-cc -p "写一个 hello world"');
       process.exit(1);
     }
   }
 
-  // 创建 readline 接口，以便监听用户的命令行输入
+  // 创建 readline 接口，以便监听用户的命令行交互输入
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: chalk.cyan('mini-cc> ')
   });
 
-  // 如果在启动时捕获到了输入，直接写入 readline 缓冲区
+  // 如果在启动时（并行预加载阶段）捕获到了用户的提前输入，直接写入 readline 缓冲区
   if (earlyInput) {
     rl.write(earlyInput);
   }
@@ -181,7 +184,7 @@ export async function startApp(prefetchConfig: any) {
 
     // 检查是否触发彩蛋系统 (文档 08: 电子宠物)
     if (input.toLowerCase() === '/buddy') {
-      spawnBuddy();
+      spawnBuddy('EasterEgg');
       rl.prompt();
       return;
     }

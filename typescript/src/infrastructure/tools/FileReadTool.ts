@@ -2,6 +2,10 @@ import * as fs from 'fs/promises';
 import { Tool, ToolUseContext } from './Tool';
 import * as path from 'path';
 
+/**
+ * 文件读取工具 (实现 Tool 接口)
+ * 允许大模型读取本地文件的内容。
+ */
 export const fileReadTool: Tool<{ file_path: string }, string> = {
   name: 'FileReadTool',
   description: `
@@ -28,7 +32,7 @@ export const fileReadTool: Tool<{ file_path: string }, string> = {
         return `读取文件时出错：file_path 不能为空`;
       }
       
-      // Resolve path against workspace if it's relative
+      // 如果路径是相对路径，使用上下文中的 workspaceDir 解析为绝对路径
       if (!path.isAbsolute(file_path)) {
         file_path = path.resolve(context.workspaceDir, file_path);
       }
@@ -37,6 +41,7 @@ export const fileReadTool: Tool<{ file_path: string }, string> = {
       
       const content = await fs.readFile(file_path, 'utf-8');
 
+      // 内容截断策略：防止读取过大文件撑爆大模型的 Context Window
       const lines = content.split('\n');
       if (lines.length > 1000) {
         console.warn(`[FileReadTool] 文件 ${file_path} 行数超过 1000 行，将进行截断`);

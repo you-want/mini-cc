@@ -2,6 +2,10 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Tool, ToolUseContext } from './Tool';
 
+/**
+ * 文件写入工具 (实现 Tool 接口)
+ * 允许大模型创建或覆盖本地文件。
+ */
 export const fileWriteTool: Tool<{ file_path: string; content: string }, string> = {
   name: 'FileWriteTool',
   description: `
@@ -32,17 +36,20 @@ export const fileWriteTool: Tool<{ file_path: string; content: string }, string>
         return `写入文件时出错：file_path 不能为空`;
       }
       
-      // Resolve path against workspace if it's relative
+      // 如果路径是相对路径，使用上下文中的 workspaceDir 解析为绝对路径
       if (!path.isAbsolute(file_path)) {
         file_path = path.resolve(context.workspaceDir, file_path);
       }
 
       console.log(`[FileWriteTool] 正在写入文件: ${file_path}`);
       
+      // 提取文件所在的目录路径
       const dir = path.dirname(file_path);
 
+      // 递归创建父级目录 (mkdir -p)，防止写入由于目录不存在而失败
       await fs.mkdir(dir, { recursive: true });
       
+      // 执行文件覆盖写入
       await fs.writeFile(file_path, content, 'utf-8');
       
       return `文件写入成功：${file_path}`;
