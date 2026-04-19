@@ -19,10 +19,10 @@ process.emit = function (name: string, data: any, ...args: any[]) {
 import * as readline from 'readline';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
-import { Agent } from './core/Agent';
+import { createAgent } from './core/Agent';
 import { LLMProvider } from './core/providers';
-import { AnthropicProvider } from './core/providers/AnthropicProvider';
-import { OpenAIProvider } from './core/providers/OpenAIProvider';
+import { createAnthropicProvider } from './core/providers/AnthropicProvider';
+import { createOpenAIProvider } from './core/providers/OpenAIProvider';
 import { spawnBuddy } from './buddy/companion';
 
 // 处理 Fast-path：极速通道，用于无需加载大模型直接返回的情况（如 --version）
@@ -50,7 +50,7 @@ if (PROVIDER === 'openai') {
     process.exit(1);
   }
   console.log(chalk.gray(`[系统配置] 已选择 OpenAI 兼容模型，模型名称: ${modelName}`));
-  providerInstance = new OpenAIProvider(apiKey, baseURL, modelName);
+  providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
 } else {
   // 默认使用 Anthropic
   const apiKey = process.env.ANTHROPIC_API_KEY || '';
@@ -62,11 +62,11 @@ if (PROVIDER === 'openai') {
     process.exit(1);
   }
   console.log(chalk.gray(`[系统配置] 已选择 Anthropic 模型，模型名称: ${modelName}`));
-  providerInstance = new AnthropicProvider(apiKey, modelName);
+  providerInstance = createAnthropicProvider(apiKey, modelName);
 }
 
 // 实例化核心的 Agent 处理器，并注入指定的 provider
-const agent = new Agent(providerInstance);
+const agent = createAgent(providerInstance);
 
 // 创建 readline 接口，以便监听用户的命令行输入
 const rl = readline.createInterface({
@@ -122,14 +122,14 @@ rl.on('line', async (line) => {
       const apiKey = process.env.OPENAI_API_KEY || '';
       const baseURL = process.env.OPENAI_BASE_URL;
       const modelName = process.env.MODEL_NAME || 'qwen3.6-plus';
-      providerInstance = new OpenAIProvider(apiKey, baseURL, modelName);
+      providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
     } else {
       const apiKey = process.env.ANTHROPIC_API_KEY || '';
       const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
-      providerInstance = new AnthropicProvider(apiKey, modelName);
+      providerInstance = createAnthropicProvider(apiKey, modelName);
     }
     // 重新实例化 Agent
-    const newAgent = new Agent(providerInstance);
+    const newAgent = createAgent(providerInstance);
     // 替换全局 agent 引用（这里使用一个技巧来更新 agent 实例）
     Object.assign(agent, newAgent);
     console.log(chalk.green('✓ 对话历史已清空。'));

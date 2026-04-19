@@ -19,7 +19,23 @@
 - **Agent 循环**：实现了类似原始 CC 的消息事件循环，支持多次连续工具调用直到任务完成。
 - **详尽中文注释**：源码中包含大量准确详细的中文注释，非常适合作为学习 Agent 开发的入门参考。
 
-## 📁 语言实现版本
+## � 文档指南
+
+为了帮助开发者更深入地理解本项目的架构设计与核心实现，我们提供了详细的文档。你可以在 [`docs`](./docs) 目录下找到这些内容：
+
+- [00. 项目大纲](./docs/00-outline.md)
+- [01. 核心架构](./docs/01-architecture.md)
+- [02. 查询引擎 (Query Engine)](./docs/02-query-engine.md)
+- [03. 工具系统 (Tool System)](./docs/03-tool-system.md)
+- [04. 记忆与上下文 (Memory & Context)](./docs/04-memory-and-context.md)
+- [05. MCP与插件系统 (MCP & Plugins)](./docs/05-mcp-and-plugins.md)
+- [06. UI 与 Ink (UI & Ink)](./docs/06-ui-and-ink.md)
+- [07. 优化与部署 (Optimization & Deployment)](./docs/07-optimization-and-deployment.md)
+- [08. 电子宠物彩蛋 (Buddy Easter Egg)](./docs/08-buddy-easter-egg.md)
+- [09. 安全与沙盒 (Security & Sandbox)](./docs/09-security-and-sandbox.md)
+- [10. 终极 Agent 能力](./docs/10-ultimate-agent-capabilities.md)
+
+## �📁 语言实现版本
 
 本项目采用多语言架构，计划使用多种编程语言实现相同的功能。目前已包含：
 
