@@ -69,7 +69,7 @@ export function createAgent(provider: LLMProvider): Agent {
       let response = await provider.sendMessage(userMessage, onTextResponse);
 
       let loopCount = 0;
-      const maxLoops = 5;
+      const maxLoops = 3;
       
       while (response.toolCalls && response.toolCalls.length > 0) {
         loopCount++;
