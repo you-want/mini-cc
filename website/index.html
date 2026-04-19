@@ -1,438 +1,416 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mini-cc — 轻量级 AI 编程智能体</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>mini-cc — 轻量级 AI 编程智能体框架</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0a0a0a',
+                        gray900: '#111',
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#10b981',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ededed;
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #60a5fa, #c084fc, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        .glow-bg {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%);
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .code-block {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: #e5e7eb;
+            overflow-x: auto;
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased selection:bg-primary selection:text-white">
+
     <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-container">
-            <a href="#" class="logo">
-                <span class="logo-icon">🦀</span>
-                <span class="logo-text">mini-cc</span>
-            </a>
-            <div class="nav-links">
-                <a href="#features">功能特性</a>
-                <a href="#architecture">架构设计</a>
-                <a href="#getting-started">快速开始</a>
-                <a href="https://github.com/you-want/mini-cc" target="_blank" class="nav-btn">GitHub</a>
+    <nav class="fixed w-full z-50 glass-card border-b-0 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🤖</span>
+                    <span class="font-bold text-xl tracking-tight">mini-cc</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
+                    <a href="#features" class="hover:text-white transition">核心特性</a>
+                    <a href="#languages" class="hover:text-white transition">多语言架构</a>
+                    <a href="#docs" class="hover:text-white transition">文档指南</a>
+                    <a href="#showcase" class="hover:text-white transition">交互展示</a>
+                    <a href="https://github.com/you-want/mini-cc" target="_blank" class="px-4 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition font-semibold">
+                        GitHub 仓库
+                    </a>
+                </div>
             </div>
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <div class="hero-bg">
-            <div class="hero-gradient"></div>
-            <div class="hero-grid"></div>
-        </div>
-        <div class="container hero-content">
-            <div class="hero-badge">
-                <span class="badge-dot"></span>
-                <span>Rust Edition v1.0.0</span>
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="glow-bg"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full glass-card text-xs font-medium text-gray-300 mb-8 border border-gray-700">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span>TypeScript, Python, Go, Rust 四大语言版本全面上线</span>
             </div>
-            <h1 class="hero-title">
-                <span class="gradient-text">轻量级</span> AI 编程智能体
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                轻量级 AI 编程 <br class="hidden md:block" />
+                <span class="text-gradient animate-gradient-x">Agent 核心框架</span>
             </h1>
-            <p class="hero-subtitle">
-                基于 Rust 构建的高性能 AI Agent，拥有内存安全、零开销抽象与无畏并发的基因。<br>
-                支持 SSE 流式输出、Tool Use 自动循环、多模型兼容。
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-400 mb-10 leading-relaxed">
+                完全自主实现的 Tool Use (工具调用) 与事件循环，支持多模型提供商。<br>
+                内置文件读写与终端执行能力，让你深入理解智能体底层架构。
             </p>
-            <div class="hero-actions">
-                <a href="#getting-started" class="btn btn-primary">
-                    <span>快速开始</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="https://github.com/you-want/mini-cc" target="_blank" class="px-8 py-4 bg-white text-black rounded-lg hover:bg-gray-200 transition font-bold text-lg flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    <span>View on GitHub</span>
                 </a>
-                <a href="#features" class="btn btn-secondary">了解更多</a>
+                <a href="#getting-started" class="px-8 py-4 bg-gray-800 text-white rounded-lg hover:bg-gray-700 border border-gray-700 transition font-bold text-lg flex items-center justify-center">
+                    快速开始指南
+                </a>
             </div>
-            <div class="hero-terminal">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <span class="terminal-title">mini-cc</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="terminal-line">
-                        <span class="prompt">$</span>
-                        <span class="command">cargo run</span>
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-green">Compiling</span> minicc v1.0.0
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-green">Finished</span> dev [unoptimized + debuginfo] target(s) in 12.34s
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-green">Running</span> `target/debug/minicc`
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-cyan">mini-cc></span> 你好，请帮我创建一个 Rust 项目
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-yellow">🔧 调用工具:</span> BashTool("cargo init --name myproject")
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-green">✅ 执行成功:</span> Created binary (application) package
-                    </div>
-                    <div class="terminal-line output">
-                        <span class="text-cyan">mini-cc></span> <span class="cursor">|</span>
-                    </div>
-                </div>
+            
+            <div class="mt-16 relative max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-gray-800 animate-float">
+                <img src="images/code1.png" alt="mini-cc Code Overview" class="w-full h-auto rounded-xl">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-60"></div>
             </div>
-        </div>
-        <div class="hero-scroll">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 5v14M5 12l7 7 7-7"/>
-            </svg>
         </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="stats">
-        <div class="container stats-grid">
-            <div class="stat-item">
-                <div class="stat-number">0</div>
-                <div class="stat-label">运行时依赖</div>
+    <!-- Languages Section -->
+    <section id="languages" class="py-20 border-t border-gray-900 bg-[#0d0d0d]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">📁 真正的一体多语言架构</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    本项目计划并已使用多种主流编程语言实现了完全相同的功能与架构。<br>
+                    让开发者可以用自己最熟悉的语言学习 Agent 核心原理。
+                </p>
             </div>
-            <div class="stat-item">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">内存安全</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">SSE</div>
-                <div class="stat-label">流式输出</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">∞</div>
-                <div class="stat-label">多轮循环</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- TypeScript -->
+                <div class="glass-card rounded-xl p-6 text-center border-t-4 border-t-blue-500">
+                    <div class="w-16 h-16 mx-auto bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-blue-500">TS</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">TypeScript</h3>
+                    <p class="text-gray-400 text-sm mb-4">原生实现，使用纯函数式架构，完美支持流式解析与工具调度。</p>
+                    <span class="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">✅ 已完成</span>
+                </div>
+                <!-- Python -->
+                <div class="glass-card rounded-xl p-6 text-center border-t-4 border-t-yellow-500">
+                    <div class="w-16 h-16 mx-auto bg-yellow-500/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-yellow-500">Py</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">Python</h3>
+                    <p class="text-gray-400 text-sm mb-4">使用 asyncio 与类型提示，Pythonic 风格重构的异步智能体。</p>
+                    <span class="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">✅ 已完成</span>
+                </div>
+                <!-- Go -->
+                <div class="glass-card rounded-xl p-6 text-center border-t-4 border-t-cyan-500">
+                    <div class="w-16 h-16 mx-auto bg-cyan-500/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-cyan-500">Go</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">Go</h3>
+                    <p class="text-gray-400 text-sm mb-4">利用 Goroutine 与 Channel，提供极致并发与高并发性能的 Agent。</p>
+                    <span class="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">✅ 已完成</span>
+                </div>
+                <!-- Rust -->
+                <div class="glass-card rounded-xl p-6 text-center border-t-4 border-t-orange-500">
+                    <div class="w-16 h-16 mx-auto bg-orange-500/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-orange-500">Rust</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">Rust</h3>
+                    <p class="text-gray-400 text-sm mb-4">内存安全，零开销抽象，编译为原生二进制，超低资源占用。</p>
+                    <span class="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">✅ 已完成</span>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">核心特性</span>
-                <h2 class="section-title">为什么选择 <span class="gradient-text">mini-cc</span>？</h2>
-                <p class="section-desc">
-                    极简架构，极致性能。mini-cc 以 Rust 的"所有权"与"无畏并发"为基石，
-                    打造了一个轻量却强大的 AI 编程智能体。
-                </p>
+    <section id="features" class="py-20 border-t border-gray-900 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">🌟 核心特性</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">麻雀虽小，五脏俱全。本项目不仅是一个玩具，更是一个功能完备的 Agent 原型。</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                    </div>
-                    <h3>内存安全 & 零开销</h3>
-                    <p>避免繁重的面向对象系统，状态安全由生命周期与借用检查器严格保证，无 GC 停顿，无数据竞争。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                        </svg>
-                    </div>
-                    <h3>SSE 流式输出</h3>
-                    <p>通过 eventsource-stream 深度解析大模型的打字机流式响应，包括思维链 (Reasoning Content) 的实时展示。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                        </svg>
-                    </div>
-                    <h3>Tool Use 自动循环</h3>
-                    <p>内置 BashTool、FileReadTool、FileWriteTool，模型可自主决策调用工具，多轮循环直至任务完成。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                    </div>
-                    <h3>多模型兼容</h3>
-                    <p>支持 OpenAI 兼容接口，可无缝切换 Qwen、GPT-4、Claude 等多种大模型，灵活配置 Base URL。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                    </div>
-                    <h3>纯函数式架构</h3>
-                    <p>延续"极简"基因，无冗余抽象层，核心逻辑清晰可追溯，易于二次开发与定制扩展。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="2" y1="12" x2="22" y2="12"/>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                        </svg>
-                    </div>
-                    <h3>原生二进制</h3>
-                    <p>编译为原生机器码，启动迅速，内存占用极低，无需虚拟机或解释器，部署即运行。</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Architecture Section -->
-    <section class="architecture" id="architecture">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">架构设计</span>
-                <h2 class="section-title">核心 <span class="gradient-text">工作流</span></h2>
-                <p class="section-desc">
-                    mini-cc 的核心是一个简洁而强大的 Agent 决策循环，
-                    通过工具调用与大模型推理的紧密配合，实现自主编程。
-                </p>
-            </div>
-            <div class="architecture-flow">
-                <div class="flow-step">
-                    <div class="flow-number">1</div>
-                    <div class="flow-content">
-                        <h3>用户输入</h3>
-                        <p>用户在终端输入自然语言指令，如"帮我创建一个 Web 项目"</p>
-                    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+                <div class="order-2 lg:order-1 glass-card p-2 rounded-xl border border-gray-800">
+                    <img src="images/code2.png" alt="Reasoning and Streaming" class="w-full rounded-lg">
                 </div>
-                <div class="flow-arrow">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
-                    </svg>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-number">2</div>
-                    <div class="flow-content">
-                        <h3>LLM 推理</h3>
-                        <p>大模型分析意图，生成 Tool Use 调用或最终回复，支持思维链推理</p>
-                    </div>
-                </div>
-                <div class="flow-arrow">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
-                    </svg>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-number">3</div>
-                    <div class="flow-content">
-                        <h3>工具执行</h3>
-                        <p>根据模型决策，调用 BashTool / FileReadTool / FileWriteTool 执行操作</p>
-                    </div>
-                </div>
-                <div class="flow-arrow">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
-                    </svg>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-number">4</div>
-                    <div class="flow-content">
-                        <h3>结果反馈</h3>
-                        <p>将工具执行结果返回给模型，模型判断是否继续循环或输出最终答案</p>
-                    </div>
-                </div>
-            </div>
-            <div class="architecture-code">
-                <div class="code-header">
-                    <span class="code-lang">Rust</span>
-                    <span class="code-file">src/core/agent.rs</span>
-                </div>
-                <pre><code><span class="code-keyword">pub async fn</span> <span class="code-func">agent_loop</span>(prompt: &<span class="code-type">str</span>) -> <span class="code-type">Result</span><<span class="code-type">String</span>> {
-    <span class="code-keyword">let mut</span> messages = <span class="code-func">init_messages</span>(prompt);
-    
-    <span class="code-keyword">loop</span> {
-        <span class="code-comment">// 1. 调用 LLM 获取响应</span>
-        <span class="code-keyword">let</span> response = client.<span class="code-func">chat_completion</span>(&messages).<span class="code-keyword">await</span>?;
-        
-        <span class="code-comment">// 2. 解析 Tool Use 调用</span>
-        <span class="code-keyword">if let</span> <span class="code-type">Some</span>(tool_calls) = response.tool_calls {
-            <span class="code-keyword">for</span> call <span class="code-keyword">in</span> tool_calls {
-                <span class="code-keyword">let</span> result = <span class="code-func">execute_tool</span>(&call).<span class="code-keyword">await</span>?;
-                messages.<span class="code-func">push</span>(result);
-            }
-            <span class="code-keyword">continue</span>; <span class="code-comment">// 继续循环</span>
-        }
-        
-        <span class="code-comment">// 3. 无工具调用，返回最终结果</span>
-        <span class="code-keyword">return</span> <span class="code-type">Ok</span>(response.content);
-    }
-}</code></pre>
-            </div>
-        </div>
-    </section>
-
-    <!-- Tools Section -->
-    <section class="tools" id="tools">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">内置工具</span>
-                <h2 class="section-title">三大核心 <span class="gradient-text">Tool</span></h2>
-                <p class="section-desc">
-                    mini-cc 内置三个核心工具，覆盖编程智能体的基本操作需求。
-                </p>
-            </div>
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <div class="tool-header">
-                        <div class="tool-icon terminal-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="4 17 10 11 4 5"/>
-                                <line x1="12" y1="19" x2="20" y2="19"/>
-                            </svg>
+                <div class="order-1 lg:order-2 space-y-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center text-primary text-xl">🌐</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">多模型提供商支持</h3>
+                            <p class="text-gray-400">支持 Anthropic API 和 OpenAI 兼容接口，可自由切换 Claude、DeepSeek、Qwen、Kimi 等多种大模型。只需修改环境变量即可无缝对接。</p>
                         </div>
-                        <h3>BashTool</h3>
                     </div>
-                    <p>利用 <code>std::process::Command</code> 高效且安全地执行 Shell 命令，支持命令输出捕获与错误处理。</p>
-                    <div class="tool-example">
-                        <code>BashTool("cargo build --release")</code>
-                    </div>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-header">
-                        <div class="tool-icon read-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                            </svg>
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-secondary/20 rounded-lg flex items-center justify-center text-secondary text-xl">⚡</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">流式输出与思考过程</h3>
+                            <p class="text-gray-400">原生支持 SSE (Server-Sent Events) 流式文本输出，并且完美适配了如 Qwen/DeepSeek 等模型的推理思考过程 (reasoning_content) 实时展示。</p>
                         </div>
-                        <h3>FileReadTool</h3>
                     </div>
-                    <p>基于 <code>std::fs</code> 实现文件读取，超大文件自动行数截断，避免内存溢出。</p>
-                    <div class="tool-example">
-                        <code>FileReadTool("src/main.rs")</code>
-                    </div>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-header">
-                        <div class="tool-icon write-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center text-accent text-xl">🛠️</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">强大的 Tool Use 系统</h3>
+                            <p class="text-gray-400">内置三大核心工具：<br>
+                                <span class="text-white text-sm font-mono bg-gray-800 px-1 rounded">BashTool</span> 执行系统终端命令。<br>
+                                <span class="text-white text-sm font-mono bg-gray-800 px-1 rounded">FileReadTool</span> 提取本地文件上下文。<br>
+                                <span class="text-white text-sm font-mono bg-gray-800 px-1 rounded">FileWriteTool</span> 覆盖写入文件，实现代码自动修改。
+                            </p>
                         </div>
-                        <h3>FileWriteTool</h3>
                     </div>
-                    <p>使用 <code>std::path::Path</code> 和 <code>create_dir_all</code> 安全地自动补全目录并写入文件内容。</p>
-                    <div class="tool-example">
-                        <code>FileWriteTool("src/lib.rs", content)</code>
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center text-pink-500 text-xl">🔄</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">自主 Agent 事件循环</h3>
+                            <p class="text-gray-400">实现了经典的 ReAct 消息事件循环，模型可根据环境反馈多次连续调用工具，直到最终任务完成。</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Getting Started Section -->
-    <section class="getting-started" id="getting-started">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">快速开始</span>
-                <h2 class="section-title">三步 <span class="gradient-text">启动</span> mini-cc</h2>
-                <p class="section-desc">
-                    只需几分钟，即可在你的机器上运行 mini-cc 智能体。
-                </p>
+    <!-- Showcase Section -->
+    <section id="showcase" class="py-20 border-t border-gray-900 bg-[#0d0d0d]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">✨ 交互展示与能力边界</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">看看 mini-cc 的 Agent 能够在实际场景中做些什么。</p>
             </div>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">01</div>
-                    <h3>环境准备</h3>
-                    <p>确保系统已安装 Rust 1.70+（推荐使用 rustup 安装）</p>
-                    <div class="step-code">
-                        <code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</code>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Wuziqi -->
+                <div class="glass-card rounded-2xl overflow-hidden group">
+                    <div class="h-64 overflow-hidden bg-gray-900 flex items-center justify-center p-4">
+                        <img src="images/wuziqi.png" alt="五子棋 Demo" class="max-h-full object-contain group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">端到端应用生成</h3>
+                        <p class="text-gray-400 text-sm">仅通过自然语言指令：“帮我写一个五子棋网页版”，Agent 能够自主思考、创建文件、写入 HTML/JS/CSS，最终完成一个可玩的网页应用。</p>
                     </div>
                 </div>
-                <div class="step-card">
-                    <div class="step-number">02</div>
-                    <h3>配置环境变量</h3>
-                    <p>在 <code>.env</code> 文件中填入你的 API Key 和模型配置</p>
-                    <div class="step-code">
-                        <code>OPENAI_API_KEY="sk-xxxxxx"<br>OPENAI_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"<br>MODEL_NAME="qwen-max"</code>
+                <!-- Buddy -->
+                <div class="glass-card rounded-2xl overflow-hidden group">
+                    <div class="h-64 overflow-hidden bg-gray-900 flex items-center justify-center p-4">
+                        <img src="images/buddy.png" alt="电子宠物彩蛋" class="max-h-full object-contain group-hover:scale-105 transition duration-500">
                     </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">03</div>
-                    <h3>编译并运行</h3>
-                    <p>使用 Cargo 构建并启动 Agent</p>
-                    <div class="step-code">
-                        <code>cargo run</code>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">内置电子宠物彩蛋 (/buddy)</h3>
+                        <p class="text-gray-400 text-sm">除了枯燥的编程，mini-cc 还在终端中内置了趣味电子宠物彩蛋，展示了在 CLI 界面下丰富的文本交互渲染能力与伪随机数生成算法。</p>
                     </div>
                 </div>
             </div>
-            <div class="cta-section">
-                <h3>准备好开始了吗？</h3>
-                <p>立即体验 mini-cc 带来的高效编程体验</p>
-                <div class="cta-actions">
-                    <a href="#" class="btn btn-primary btn-large">
-                        <span>下载 mini-cc</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                        </svg>
-                    </a>
-                    <a href="#" class="btn btn-secondary btn-large">查看文档</a>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="py-20 border-t border-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">📚 详尽的文档指南</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">为了帮助开发者更深入地理解本项目的架构设计与核心实现，我们提供了完整的技术文档。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">00.</span>
+                    <span class="text-gray-200 font-medium">项目大纲</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">01.</span>
+                    <span class="text-gray-200 font-medium">核心架构</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">02.</span>
+                    <span class="text-gray-200 font-medium">查询引擎 (Query Engine)</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">03.</span>
+                    <span class="text-gray-200 font-medium">工具系统 (Tool System)</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">04.</span>
+                    <span class="text-gray-200 font-medium">记忆与上下文 (Memory)</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">05.</span>
+                    <span class="text-gray-200 font-medium">MCP与插件系统</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">06.</span>
+                    <span class="text-gray-200 font-medium">UI 与 Ink</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">07.</span>
+                    <span class="text-gray-200 font-medium">优化与部署</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">08.</span>
+                    <span class="text-gray-200 font-medium">电子宠物彩蛋</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer">
+                    <span class="text-gray-500 font-mono">09.</span>
+                    <span class="text-gray-200 font-medium">安全与沙盒</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg flex items-center space-x-3 hover:bg-gray-800 transition cursor-pointer lg:col-span-2">
+                    <span class="text-gray-500 font-mono">10.</span>
+                    <span class="text-gray-200 font-medium">终极 Agent 能力</span>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="inline-flex items-center text-primary hover:text-blue-400 font-medium transition">
+                    前往 GitHub 查看完整文档 <span class="ml-1">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started -->
+    <section id="getting-started" class="py-20 border-t border-gray-900 bg-gradient-to-b from-[#0a0a0a] to-[#111]">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">🚀 快速开始</h2>
+                <p class="text-gray-400">以 TypeScript 版本为例，仅需几步即可在本地跑起你的专属 Agent。</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-white font-medium mb-3">1. 克隆与安装依赖</h4>
+                    <div class="code-block">
+git clone https://github.com/you-want/mini-cc.git
+cd mini-cc/typescript
+pnpm install
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-white font-medium mb-3">2. 配置环境变量 (.env)</h4>
+                    <div class="code-block">
+# 选项: 'anthropic' 或 'openai'
+PROVIDER=openai
+
+# 以 Qwen 为例的兼容接口
+OPENAI_API_KEY=your_api_key_here
+OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+MODEL_NAME=qwen3.6-plus
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-white font-medium mb-3">3. 启动并交互</h4>
+                    <div class="code-block mb-4">
+pnpm run dev
+                    </div>
+                    <p class="text-sm text-gray-400">然后在终端输入你的需求，例如："帮我创建一个 hello.js 文件，内容是输出 Hello World。"</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <a href="#" class="logo">
-                        <span class="logo-icon">🦀</span>
-                        <span class="logo-text">mini-cc</span>
-                    </a>
-                    <p>轻量级 AI 编程智能体，基于 Rust 构建，安全、高效、极简。</p>
-                </div>
-                <div class="footer-links">
-                    <h4>项目</h4>
-                    <a href="#features">功能特性</a>
-                    <a href="#architecture">架构设计</a>
-                    <a href="#getting-started">快速开始</a>
-                </div>
-                <div class="footer-links">
-                    <h4>资源</h4>
-                    <a href="#">文档</a>
-                    <a href="#">API 参考</a>
-                    <a href="#">示例项目</a>
-                </div>
-                <div class="footer-links">
-                    <h4>社区</h4>
-                    <a href="#">GitHub</a>
-                    <a href="#">Discussions</a>
-                    <a href="#">贡献指南</a>
-                </div>
+    <footer class="py-12 border-t border-gray-900 bg-black text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center space-x-2 mb-6">
+                <span class="text-2xl">🤖</span>
+                <span class="font-bold text-xl tracking-tight text-white">mini-cc</span>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 mini-cc. Built with 🦀 Rust & ❤️</p>
+            <p class="text-gray-500 text-sm mb-6">
+                本项目基于 MIT 协议开源，欢迎自由学习、修改和分发。<br>
+                打造最适合入门学习的 AI 编程 Agent 核心框架。
+            </p>
+            <div class="flex justify-center space-x-6">
+                <a href="https://github.com/you-want/mini-cc" target="_blank" class="text-gray-400 hover:text-white transition">
+                    <span class="sr-only">GitHub</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
             </div>
+            <p class="mt-8 text-xs text-gray-600">
+                &copy; 2024 mini-cc Project. All rights reserved.
+            </p>
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
 </body>
 </html>
