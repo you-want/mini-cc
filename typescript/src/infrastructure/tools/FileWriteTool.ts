@@ -1,7 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { Tool, ToolUseContext } from './Tool';
 
-export const fileWriteTool = {
+export const fileWriteTool: Tool<{ file_path: string; content: string }, string> = {
   name: 'FileWriteTool',
   description: `
     将内容写入到指定文件。
@@ -24,12 +25,18 @@ export const fileWriteTool = {
     },
     required: ['file_path', 'content'],
   },
-  execute: async (args: { file_path: string; content: string }): Promise<string> => {
+  execute: async (args: { file_path: string; content: string }, context: ToolUseContext): Promise<string> => {
     try {
-      const { file_path, content } = args;
+      let { file_path, content } = args;
       if (!file_path) {
         return `写入文件时出错：file_path 不能为空`;
       }
+      
+      // Resolve path against workspace if it's relative
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.resolve(context.workspaceDir, file_path);
+      }
+
       console.log(`[FileWriteTool] 正在写入文件: ${file_path}`);
       
       const dir = path.dirname(file_path);
@@ -40,6 +47,9 @@ export const fileWriteTool = {
       
       return `文件写入成功：${file_path}`;
     } catch (error: any) {
+      if (error.code === 'EACCES' || error.code === 'EPERM') {
+        return `写入文件时出错：权限不足，无法写入文件 ${args.file_path}。错误信息: ${error.message}`;
+      }
       return `写入文件时出错：${error.message}`;
     }
   }

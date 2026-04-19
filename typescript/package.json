@@ -2,15 +2,15 @@
   "name": "mini-cc",
   "version": "1.0.0",
   "description": "A lightweight AI coding agent built with TypeScript, supporting multiple LLMs (Anthropic, Qwen, DeepSeek, etc.)",
-  "main": "dist/index.js",
+  "main": "dist/cli.js",
   "bin": {
-    "mini-cc": "dist/index.js"
+    "mini-cc": "dist/cli.js"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.1",

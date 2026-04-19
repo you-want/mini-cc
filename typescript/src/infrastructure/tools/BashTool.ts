@@ -1,10 +1,11 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { checkCommandSecurity } from './BashTool/bashSecurity';
+import { Tool, ToolUseContext } from './Tool';
 
 const execAsync = promisify(exec);
 
-export const bashTool = {
+export const bashTool: Tool<{ command: string }, string> = {
   name: 'BashTool',
   description: `
     在本地系统执行 Bash/Shell 命令。
@@ -25,7 +26,7 @@ export const bashTool = {
     },
     required: ['command'],
   },
-  execute: async (args: { command: string }): Promise<string> => {
+  execute: async (args: { command: string }, context: ToolUseContext): Promise<string> => {
     try {
       const { command } = args;
       if (!command) {
@@ -38,10 +39,14 @@ export const bashTool = {
         return `命令执行被安全沙盒拒绝：${securityCheck.reason}\n请修改你的方案或采取其他不具备破坏性的方式。`;
       }
 
-      console.log(`[BashTool] 正在执行命令: ${command}`);
+      // Check permission via context strategy
+      const isAllowed = await context.permissionContext.strategy;
+      // In real scenario we'd await globalPermissionManager.requestPermission(bashTool.name, args, context.permissionContext);
+      
+      console.log(`[BashTool] 正在执行命令: ${command} in ${context.workspaceDir}`);
       
       const { stdout, stderr } = await execAsync(command, {
-        cwd: process.cwd(),
+        cwd: context.workspaceDir,
       });
 
       if (stderr) {

@@ -1,6 +1,8 @@
 import * as fs from 'fs/promises';
+import { Tool, ToolUseContext } from './Tool';
+import * as path from 'path';
 
-export const fileReadTool = {
+export const fileReadTool: Tool<{ file_path: string }, string> = {
   name: 'FileReadTool',
   description: `
     读取本地系统上的文件内容。
@@ -19,12 +21,18 @@ export const fileReadTool = {
     },
     required: ['file_path'],
   },
-  execute: async (args: { file_path: string }): Promise<string> => {
+  execute: async (args: { file_path: string }, context: ToolUseContext): Promise<string> => {
     try {
-      const { file_path } = args;
+      let { file_path } = args;
       if (!file_path) {
         return `读取文件时出错：file_path 不能为空`;
       }
+      
+      // Resolve path against workspace if it's relative
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.resolve(context.workspaceDir, file_path);
+      }
+      
       console.log(`[FileReadTool] 正在读取文件: ${file_path}`);
       
       const content = await fs.readFile(file_path, 'utf-8');

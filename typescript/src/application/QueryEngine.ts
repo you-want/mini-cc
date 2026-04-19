@@ -1,5 +1,9 @@
-import { tools } from '../tools';
-import { LLMProvider, ToolCall } from './providers';
+import { tools } from '../infrastructure/tools';
+import { LLMProvider, ToolCall } from '../services/providers';
+import { globalHooks } from '../infrastructure/hooks/hooks';
+import { globalAppState } from '../infrastructure/state/AppStateStore';
+import { globalPermissionManager } from '../infrastructure/permissions';
+import { ToolUseContext } from '../infrastructure/tools/Tool';
 
 export interface Agent {
   chat: (userMessage: string, onTextResponse: (text: string, isThinking?: boolean) => void) => Promise<void>;
@@ -10,6 +14,17 @@ export function createAgent(provider: LLMProvider): Agent {
     toolCalls: ToolCall[]
   ): Promise<{ id: string; name: string; result: string; isError: boolean }[]> => {
     const results: { id: string; name: string; result: string; isError: boolean }[] = [];
+
+    // Dependency Injection: Prepare the ToolUseContext
+    const context: ToolUseContext = {
+      stateStore: globalAppState,
+      permissionContext: {
+        strategy: 'default',
+        allowedTools: new Set(),
+        deniedTools: new Set(),
+      },
+      workspaceDir: process.cwd(),
+    };
 
     for (const call of toolCalls) {
       if (call.args && call.args._parse_error) {
@@ -36,13 +51,27 @@ export function createAgent(provider: LLMProvider): Agent {
       }
 
       try {
+        // Event-Driven: Trigger PreToolUse hook
+        await globalHooks.trigger('PreToolUse', { toolName: call.name, args: call.args });
+        
         console.log(`\x1b[36m▶ [Agent] 正在调用工具: ${call.name} ...\x1b[0m`);
-        let result = await tool.execute(call.args);
+        
+        // Execute tool with context (DI pattern)
+        let result = await tool.execute(call.args, context);
         console.log(`\x1b[32m✔ [Agent] 工具 ${call.name} 执行完毕。\x1b[0m`);
         
+        // Event-Driven: Trigger PostToolUse hook
+        await globalHooks.trigger('PostToolUse', { toolName: call.name, result });
+
         if (typeof result === 'string' && result.length > 8000) {
+          // Event-Driven: PreCompact hook
+          await globalHooks.trigger('PreCompact', { toolName: call.name, length: result.length });
+          
           console.warn(`\n[上下文瘦身] 工具 ${call.name} 返回结果过长 (${result.length} 字符)，已触发 microcompact 截断。`);
           result = result.substring(0, 8000) + '\n\n...[由于内容过长，已被系统 microcompact 机制截断]...';
+          
+          // Event-Driven: PostCompact hook
+          await globalHooks.trigger('PostCompact', { toolName: call.name, newLength: result.length });
         }
 
         results.push({

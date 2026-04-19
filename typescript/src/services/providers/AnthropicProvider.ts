@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { tools } from '../../tools';
+import { tools } from '../../infrastructure/tools';
 import { LLMProvider, ProviderResponse } from './index';
 
 export function createAnthropicProvider(apiKey: string, model: string = 'claude-3-7-sonnet-20250219'): LLMProvider {

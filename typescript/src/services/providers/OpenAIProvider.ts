@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { tools } from '../../tools';
+import { tools } from '../../infrastructure/tools';
 import { LLMProvider, ProviderResponse } from './index';
 
 export function createOpenAIProvider(apiKey: string, baseURL?: string, model: string = 'gpt-4o'): LLMProvider {
