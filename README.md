@@ -1,4 +1,7 @@
-# mini-cc
+<div align="center">
+  <img src="website/images/logo.svg" width="120" alt="mini-cc logo" />
+  <h1>mini-cc</h1>
+</div>
 
 这是一个轻量级的 AI 编程 Agent 核心框架实现，完全使用 TypeScript 编写。
 
