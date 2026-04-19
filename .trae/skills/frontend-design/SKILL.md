@@ -1,45 +1,45 @@
 ---
 name: "frontend-design"
-description: "Create distinctive, production-grade frontend interfaces with high design quality. Use when building web pages or UI. Avoids generic AI aesthetics."
+description: "创建具有高设计质量的独特、生产级前端界面。在构建网页或 UI 时使用此技能，以避免生成通用的 AI 廉价审美（AI slop）。"
 ---
 
-# Frontend Design
+# 前端设计 (Frontend Design)
 
-This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
+本技能旨在指导创建独特、生产级别的前端界面，避免通用的“AI 廉价审美（AI slop）”。在编写实际可用代码的同时，需要极度关注美学细节并做出富有创造力的设计选择。
 
-## Design Thinking
+## 设计思维 (Design Thinking)
 
-Before coding, understand the context and commit to a BOLD aesthetic direction:
+在开始编码之前，先理解项目的上下文，并确定一个**大胆的**美学方向：
 
-1. **Purpose**: What problem does this interface solve? Who uses it?
-2. **Tone**: Pick a distinctive aesthetic (e.g., Brutally minimal, Retro-futuristic, Editorial/magazine, Industrial).
-3. **Constraints**: Technical requirements.
-4. **Differentiation**: What makes this UNFORGETTABLE?
+1. **目标**：这个界面解决了什么问题？目标用户是谁？
+2. **基调**：选择一种独特的美学风格（例如：极简粗野主义、复古未来主义、社论/杂志风、工业风）。
+3. **约束**：有哪些技术和功能要求？
+4. **差异化**：是什么让这个设计**令人过目不忘**？
 
-**CRITICAL**: Choose a clear conceptual direction and execute it with precision.
+**关键要求**：选择一个清晰的概念方向，并精确地执行它。
 
-## Anti-Slop Design Rules
+## 反廉价审美设计规则 (Anti-Slop Design Rules)
 
-### NEVER Use These (AI Slop Indicators)
-- **Typography Slop**: Inter, Roboto, Arial as primary fonts. Uniform font sizes.
-- **Color Slop**: Purple/violet gradients on white backgrounds. Generic blue (#3B82F6) as primary color. Washed-out schemes.
-- **Layout Slop**: Perfectly centered everything. Grid of 3-4 identical cards.
-- **Component Slop**: Glassmorphism on everything. Shadows that are too soft.
-- **Animation Slop**: Fade-in on scroll for everything. Bounce effects on buttons.
+### 绝对禁止使用（AI 廉价审美的标志）
+- **排版俗套**：将 Inter、Roboto、Arial 作为主要字体。字体大小缺乏对比、过于统一。
+- **色彩俗套**：白色背景上使用紫色/紫罗兰色渐变。使用通用的蓝色（#3B82F6）作为主色调。褪色、寡淡的配色方案。
+- **布局俗套**：所有元素完美居中对齐。3到4个完全相同的卡片组成的无聊网格。
+- **组件俗套**：到处滥用玻璃拟物化（Glassmorphism）。阴影过于柔和模糊。
+- **动画俗套**：滚动时一切元素都采用淡入（Fade-in）效果。按钮上使用弹跳（Bounce）动效。
 
-### INSTEAD, Create Distinctive Design
-- **Typography**: 
-  - Display fonts: Clash Display, Cabinet Grotesk, Space Grotesk, Playfair Display.
-  - Body fonts: Geist, Plus Jakarta Sans, DM Sans.
-  - Create contrast between display and body fonts. Use larger type than comfortable (48px+ for headlines). Vary font weights dramatically.
-- **Color**: 
-  - Pick ONE dominant color and use it sparingly.
-  - Use near-black (#0A0A0A) instead of pure black.
-  - Create depth with subtle gradients in backgrounds.
-- **Layouts That Break the Grid**: 
-  - Asymmetric compositions with clear hierarchy.
-  - Overlapping elements that create depth.
-  - Generous negative space OR intentional density.
-- **Components**: 
-  - Micro-interactions that feel tactile.
-  - Empty states that guide rather than decorate.
+### 替代方案：创造独特的设计
+- **排版**：
+  - 展示字体（大标题）：Clash Display, Cabinet Grotesk, Space Grotesk, Playfair Display。
+  - 正文字体：Geist, Plus Jakarta Sans, DM Sans。
+  - 在展示字体和正文字体之间建立强烈的对比。使用比常规“舒适”尺寸更大的字体（标题 48px 以上）。极大地改变字体粗细（字重对比）。
+- **色彩**：
+  - 挑选**一种**主导色并克制地使用它（点缀色）。
+  - 使用近乎黑色（如 #0A0A0A）来代替纯黑。
+  - 通过背景中非常微妙的渐变来营造空间深度。
+- **打破网格的布局**：
+  - 具有清晰视觉层级的不对称构图。
+  - 元素重叠以创造深度。
+  - 极其慷慨的留白，或者是有意为之的密集排版。
+- **组件**：
+  - 感觉具有真实物理触感的微交互。
+  - 具有引导作用而非仅仅是装饰的空状态（Empty states）。
