@@ -105,7 +105,7 @@ func (a *Agent) Chat(userMessage string, onTextResponse func(text string, isThin
 
 	loopCount := 0
 	// 设置最大自动调用循环次数，防止大模型陷入死循环
-	maxLoops := 5
+	maxLoops := 3
 
 	// 进入工具调用的事件循环
 	for {

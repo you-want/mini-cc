@@ -1,9 +1,23 @@
 use super::{Tool, ToolExecuteFn};
 use serde_json::{json, Value};
 use std::process::Command;
+use regex::Regex;
 
 fn check_security(command: &str) -> Result<(), String> {
-    let forbidden = ["rm -rf /", "mkfs", "dd if="];
+    // 禁止执行 rm -rf / 及其变体，使用正则匹配各种形式的 rm 命令
+    let rm_pattern = Regex::new(r"rm\s+-[rR]?[fF]?[rR]?\s+/?\s*\*?").unwrap();
+    if rm_pattern.is_match(command) {
+        return Err("包含高危操作: 试图执行 rm -rf 相关命令，已被安全策略阻止。".to_string());
+    }
+
+    // 禁止在命令中使用 $(...) 或 `...` 形式的命令替换（防止嵌套执行恶意命令）
+    let cmd_sub_pattern = Regex::new(r"\$\(.*\)|\`.*\`").unwrap();
+    if cmd_sub_pattern.is_match(command) {
+        return Err("包含高危操作: 试图使用命令替换语法 $(...) 或 `...`，已被安全策略阻止。".to_string());
+    }
+
+    // 禁止其他常见的危险系统操作
+    let forbidden = ["mkfs", "dd if=", ":(){ :|:& };:", "wget ", "curl "];
     for f in forbidden {
         if command.contains(f) {
             return Err(format!("包含高危操作: {}", f));
@@ -59,4 +73,25 @@ fn execute(args: Value) -> std::pin::Pin<Box<dyn std::future::Future<Output = Re
 
         Ok(format!("{}{}", stdout, stderr))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_security() {
+        assert!(check_security("ls -la").is_ok());
+        assert!(check_security("echo 'hello'").is_ok());
+        
+        assert!(check_security("rm -rf /").is_err());
+        assert!(check_security("rm -f -r /").is_err());
+        assert!(check_security("rm -rf /*").is_err());
+        
+        assert!(check_security("echo $(ls)").is_err());
+        assert!(check_security("echo `ls`").is_err());
+        
+        assert!(check_security("mkfs.ext4 /dev/sda1").is_err());
+        assert!(check_security("dd if=/dev/zero of=/dev/sda").is_err());
+    }
 }

@@ -1,8 +1,12 @@
 # 🦀 mini-cc (Rust Edition)
 
-这是 `mini-cc` 智能体的 **Rust 语言实现版本**。基于 Rust 的“所有权”、“内存安全”以及“无畏并发”理念，本项目不仅提供了原生二进制级别的高性能执行效率，也通过 `tokio`、`reqwest` 异步框架实现了极致的流式流转与事件响应。
+这是 `mini-cc` 智能体的 **Rust 语言实现版本**。
 
-在实现上，Rust 版本延续了项目“极简”、“纯函数式架构”的基因。我们自己手动实现了 SSE (Server-Sent Events) 的流式解析，从而深度接管大模型的 Tool Use 与 Reasoning Content 推理。
+基于 Rust 的“所有权”、“内存安全”以及“无畏并发”理念，本项目不仅提供了原生二进制级别的高性能执行效率，也通过 `tokio`、`reqwest` 异步框架实现了极致的流式流转与事件响应。
+
+在实现上，Rust 版本延续了项目“极简”、“纯函数式架构”的基因。
+
+我们自己手动实现了 SSE (Server-Sent Events) 的流式解析，从而深度接管大模型的 Tool Use 与 Reasoning Content 推理。
 
 ## ✨ 已实现功能
 

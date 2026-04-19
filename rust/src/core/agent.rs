@@ -1,6 +1,8 @@
 use crate::core::providers::{LLMProvider, OnTextResponseFn, ToolCall, ToolResult};
 use crate::tools::get_all_tools;
 
+/// 核心 Agent 结构体
+/// 负责协调大模型 (LLMProvider) 和本地工具 (Tools)，实现 ReAct 循环
 pub struct Agent {
     provider: Box<dyn LLMProvider>,
 }
@@ -10,6 +12,8 @@ impl Agent {
         Agent { provider }
     }
 
+    /// 处理大模型返回的工具调用请求
+    /// 依次执行各个工具，并收集执行结果
     async fn handle_tool_calls(&self, tool_calls: Vec<ToolCall>) -> Vec<ToolResult> {
         let mut results = Vec::new();
 
@@ -18,6 +22,7 @@ impl Agent {
             let name = call.name;
             let args = call.args;
 
+            // 拦截 JSON 解析错误
             if let Some(err) = args.get("_parse_error") {
                 if err.as_bool().unwrap_or(false) {
                     let raw = args.get("_raw_arguments").and_then(|v| v.as_str()).unwrap_or("");
@@ -40,6 +45,7 @@ impl Agent {
                     match (t.execute)(args).await {
                         Ok(mut result) => {
                             println!("\x1b[32m✔ [Agent] 工具 {} 执行完毕。\x1b[0m", name);
+                            // Context Microcompact: 截断超长输出，防止撑爆大模型上下文
                             if result.len() > 8000 {
                                 println!("\n[上下文瘦身] 工具 {} 返回结果过长 ({} 字符)，已触发截断。", name, result.len());
                                 result = format!("{}\n\n...[由于内容过长，已被截断]...", &result[0..8000]);
@@ -76,12 +82,19 @@ impl Agent {
         results
     }
 
+    /// 用户对话入口
+    /// 实现完整的 ReAct (Reasoning and Acting) 循环：
+    /// 1. 接收用户输入发送给大模型
+    /// 2. 检查大模型是否需要调用工具
+    /// 3. 如果需要，在本地执行对应工具，将结果再次发送给大模型 (循环)
+    /// 4. 如果不需要，循环结束，等待用户下一次输入
     pub async fn chat(&mut self, user_message: String, on_text_response: OnTextResponseFn) {
         match self.provider.send_message(user_message, &on_text_response).await {
             Ok(mut response) => {
                 let mut loop_count = 0;
-                let max_loops = 5;
+                let max_loops = 3; // 设置最大循环次数，防止死循环
 
+                // ReAct 主循环
                 while !response.tool_calls.is_empty() {
                     loop_count += 1;
                     if loop_count > max_loops {
@@ -90,9 +103,11 @@ impl Agent {
                     }
 
                     println!("\n\x1b[33m[Agent] 收到大模型指令，准备执行 {} 个工具调用... (第 {} 轮)\x1b[0m", response.tool_calls.len(), loop_count);
+                    // 执行所有的工具调用
                     let tool_results = self.handle_tool_calls(response.tool_calls).await;
 
                     println!("\n\x1b[33m[Agent] 工具执行完毕，正在将结果发送回大模型，请稍候...\x1b[0m\n");
+                    // 将工具结果发送回大模型，等待下一次回复或工具调用
                     match self.provider.send_tool_results(tool_results, &on_text_response).await {
                         Ok(res) => response = res,
                         Err(e) => {

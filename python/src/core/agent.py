@@ -89,7 +89,7 @@ class Agent:
             response = await self.provider.send_message(user_message, on_text_response)
             
             loop_count = 0
-            max_loops = 5  # 防止模型陷入死循环（如不断调用失败又不断重试）
+            max_loops = 3  # 防止模型陷入死循环（如不断调用失败又不断重试）
             
             # 进入 Agent 核心循环：只要模型有未处理的工具调用，就继续循环
             while response.get("toolCalls") and len(response["toolCalls"]) > 0:

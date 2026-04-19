@@ -41,3 +41,4 @@ pub trait LLMProvider: Send + Sync {
 }
 
 pub mod openai_provider;
+pub mod anthropic_provider;

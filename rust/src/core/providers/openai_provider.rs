@@ -9,6 +9,7 @@ use std::pin::Pin;
 use futures_util::StreamExt;
 use eventsource_stream::Eventsource;
 
+/// OpenAI API 兼容的消息结构
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Message {
     pub role: String,
@@ -19,6 +20,8 @@ pub struct Message {
     pub tool_call_id: Option<String>,
 }
 
+/// OpenAI 模型接口提供商
+/// 用于连接所有兼容 OpenAI 接口格式的模型 (包括 gpt-4o, qwen 等)
 pub struct OpenAIProvider {
     client: Client,
     api_key: String,
@@ -29,6 +32,7 @@ pub struct OpenAIProvider {
 
 impl OpenAIProvider {
     pub fn new(api_key: String, base_url: String, model: String) -> Self {
+        // 设置系统提示词，规范 Agent 的行为模式和默认输出目录
         let system_prompt = "你是一个名为 mini-cc 的高级 AI 编程助手。你拥有读取文件、写入文件和执行终端命令的权限。你的目标是帮助用户解决复杂的软件工程问题。\n\n【默认输出目录】\n如果用户要求你创建、生成、输出代码或文件，但没有明确指明输出目录，请务必默认将这些内容输出到相对于当前工作目录的上一级目录下的 `test_file` 文件夹中（即 `../test_file` 目录下）。";
 
         let messages = vec![Message {
@@ -53,6 +57,7 @@ impl OpenAIProvider {
         }
     }
 
+    /// 将本地的工具列表转换成 OpenAI 接口所要求的格式
     fn get_tools(&self) -> Vec<Value> {
         let mut tools = Vec::new();
         for t in get_all_tools() {
@@ -68,6 +73,8 @@ impl OpenAIProvider {
         tools
     }
 
+    /// 向 OpenAI 兼容接口发起流式请求并处理返回
+    /// 手动解析 Server-Sent Events (SSE) 流，拼接文本和工具参数
     async fn create_message(
         &mut self,
         on_text_response: &OnTextResponseFn,
@@ -127,13 +134,17 @@ impl OpenAIProvider {
                                         on_text_response(content.to_string(), false);
                                     }
 
+                                    if let Some(reasoning) = delta.get("reasoning_content").and_then(|c| c.as_str()) {
+                                        on_text_response(reasoning.to_string(), true);
+                                    }
+
                                     if let Some(tool_calls) = delta.get("tool_calls").and_then(|tc| tc.as_array()) {
                                         for tc in tool_calls {
                                             if let Some(index) = tc.get("index").and_then(|i| i.as_u64()) {
                                                 let idx = index as usize;
                                                 let existing = tool_calls_map.entry(idx).or_insert_with(|| {
                                                     json!({
-                                                        "id": tc.get("id").unwrap_or(&json!("")),
+                                                        "id": "",
                                                         "type": "function",
                                                         "function": {
                                                             "name": "",
@@ -173,6 +184,7 @@ impl OpenAIProvider {
         let mut final_tool_calls = Vec::new();
         let mut msg_tool_calls = Vec::new();
 
+        // 遍历并组装收集到的工具调用片段
         for (_, tc) in tool_calls_map.iter() {
             let id = tc.get("id").and_then(|i| i.as_str()).unwrap_or("").to_string();
             let name = tc["function"]["name"].as_str().unwrap_or("").to_string();
@@ -201,21 +213,23 @@ impl OpenAIProvider {
                 args: args.clone(),
             });
 
-            msg_tool_calls.push(tc.clone());
+            msg_tool_calls.push(json!({
+                "id": id,
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": raw_args
+                }
+            }));
         }
 
-        let mut assistant_msg = Message {
+        // 将助手的回复添加到历史记录中，用于后续轮次的上下文
+        self.messages.push(Message {
             role: "assistant".to_string(),
             content: full_content.clone(),
-            tool_calls: None,
+            tool_calls: if msg_tool_calls.is_empty() { None } else { Some(msg_tool_calls) },
             tool_call_id: None,
-        };
-
-        if !msg_tool_calls.is_empty() {
-            assistant_msg.tool_calls = Some(msg_tool_calls);
-        }
-
-        self.messages.push(assistant_msg);
+        });
 
         Ok(ChatResponse {
             text: full_content,
@@ -225,37 +239,37 @@ impl OpenAIProvider {
 }
 
 impl LLMProvider for OpenAIProvider {
+    /// 接收用户输入并触发对话
     fn send_message<'a>(
         &'a mut self,
         user_message: String,
         on_text_response: &'a OnTextResponseFn,
     ) -> Pin<Box<dyn Future<Output = Result<ChatResponse, String>> + Send + 'a>> {
-        Box::pin(async move {
-            self.messages.push(Message {
-                role: "user".to_string(),
-                content: user_message,
-                tool_calls: None,
-                tool_call_id: None,
-            });
-            self.create_message(on_text_response).await
-        })
+        self.messages.push(Message {
+            role: "user".to_string(),
+            content: user_message,
+            tool_calls: None,
+            tool_call_id: None,
+        });
+
+        Box::pin(self.create_message(on_text_response))
     }
 
+    /// 将工具执行结果反馈给大模型
     fn send_tool_results<'a>(
         &'a mut self,
         results: Vec<ToolResult>,
         on_text_response: &'a OnTextResponseFn,
     ) -> Pin<Box<dyn Future<Output = Result<ChatResponse, String>> + Send + 'a>> {
-        Box::pin(async move {
-            for r in results {
-                self.messages.push(Message {
-                    role: "tool".to_string(),
-                    content: r.result,
-                    tool_calls: None,
-                    tool_call_id: Some(r.id),
-                });
-            }
-            self.create_message(on_text_response).await
-        })
+        for r in results {
+            self.messages.push(Message {
+                role: "tool".to_string(),
+                content: r.result,
+                tool_calls: None,
+                tool_call_id: Some(r.id),
+            });
+        }
+
+        Box::pin(self.create_message(on_text_response))
     }
 }
