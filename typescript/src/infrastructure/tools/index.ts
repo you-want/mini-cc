@@ -1,10 +1,12 @@
 export { bashTool } from './BashTool';
 export { fileReadTool } from './FileReadTool';
 export { fileWriteTool } from './FileWriteTool';
+export { gitStatusTool } from './GitStatusTool';
 
 import { bashTool } from './BashTool';
 import { fileReadTool } from './FileReadTool';
 import { fileWriteTool } from './FileWriteTool';
+import { gitStatusTool } from './GitStatusTool';
 
 /**
  * 所有注册在 Agent 中的工具实例。
@@ -13,5 +15,6 @@ import { fileWriteTool } from './FileWriteTool';
 export const tools = [
   bashTool,
   fileReadTool,
-  fileWriteTool
+  fileWriteTool,
+  gitStatusTool
 ];
