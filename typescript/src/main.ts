@@ -16,17 +16,28 @@ process.emit = function (name: string, data: any, ...args: any[]) {
   return originalEmit.apply(process, [name, data, ...args]);
 };
 
+// 引入 readline 模块，用于处理命令行交互
 import * as readline from 'readline';
+// 引入 chalk 模块，用于命令行输出的彩色化
 import chalk from 'chalk';
+// 引入 dotenv 模块，用于加载环境变量
 import * as dotenv from 'dotenv';
+// 引入 QueryEngine 模块，用于创建查询引擎实例
 import { createAgent } from './application/QueryEngine';
+// 引入 LLMProvider 模块，用于创建大模型服务商实例
 import { LLMProvider } from './services/providers';
+// 引入 AnthropicProvider 模块，用于创建 Anthropic 服务商实例
 import { createAnthropicProvider } from './services/providers/AnthropicProvider';
+// 引入 OpenAIProvider 模块，用于创建 OpenAI 服务商实例
 import { createOpenAIProvider } from './services/providers/OpenAIProvider';
+// 引入 spawnBuddy 模块，用于创建伙伴系统实例
 import { spawnBuddy } from './buddy/companion';
+// 引入 globalHooks 模块，用于触发生命周期钩子触发
 import { globalHooks } from './infrastructure/hooks/hooks';
+// 引入 stopCapturingEarlyInput 模块，用于停止早期输入捕获
 import { stopCapturingEarlyInput } from './infrastructure/utils/earlyInput';
 
+// 应用启动函数，负责初始化大模型服务商、触发 AppStart 生命周期钩子等
 export async function startApp(prefetchConfig: any) {
   // 获取早期的用户输入，避免吞键
   // 对应 01-architecture.md 里的 "Early Input Capture" 机制
@@ -38,7 +49,8 @@ export async function startApp(prefetchConfig: any) {
   // 处理 Fast-path：极速通道，用于无需加载大模型直接返回的情况（如 --version）
   const args = process.argv.slice(2);
   if (args.length === 1 && (args[0] === '--version' || args[0] === '-v')) {
-    console.log('mini-cc v1.0.0 (Fast-path)');
+    const pkg = require('../package.json');
+    console.log(`mini-cc v${pkg.version} (Fast-path)`); // pnpm dev -v
     process.exit(0);
   }
 

@@ -20,13 +20,17 @@ process.emit = function (name: string, data: any, ...args: any[]) {
 // 获取命令行参数
 const args = process.argv.slice(2);
 
+// 获取真实的版本号
+const pkg = require('../package.json');
+const version = pkg.version;
+
 // 【Fast-path 极速通道检查】
 // 这里的关键是不进行任何庞大的 `import` 操作，直接处理无需复杂逻辑的命令。
 // 这保证了像 `--version` 或 `--health` 这样的命令能实现“秒开”，0延迟。
 if (args.length > 0) {
   const cmd = args[0];
   if (cmd === '--version' || cmd === '-v') {
-    console.log('mini-cc v1.0.0 (Fast-path)');
+    console.log(`mini-cc v${version} (Fast-path)`);
     process.exit(0);
   }
   if (cmd === '--help' || cmd === '-h') {

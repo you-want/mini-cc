@@ -1,8 +1,14 @@
+// 引入 tools 模块，用于处理大模型返回的工具调用请求
 import { tools } from '../infrastructure/tools';
+// 引入 LLMProvider 模块，用于与大模型服务商交互
 import { LLMProvider, ToolCall } from '../services/providers';
+// 引入 globalHooks 模块，用于触发 AppStart 生命周期钩子等
 import { globalHooks } from '../infrastructure/hooks/hooks';
+// 引入 globalAppState 模块，用于存储应用状态
 import { globalAppState } from '../infrastructure/state/AppStateStore';
+// 引入 globalPermissionManager 模块，用于管理应用权限
 import { globalPermissionManager } from '../infrastructure/permissions';
+// 引入 ToolUseContext 模块，用于定义工具调用的上下文
 import { ToolUseContext } from '../infrastructure/tools/Tool';
 
 /**
