@@ -149,6 +149,8 @@ export async function startApp(prefetchConfig: any) {
   rl.prompt();
 
   // 监听终端输入的回车事件
+  let currentAbortController: AbortController | null = null;
+
   rl.on('line', async (line) => {
     const input = line.trim();
 
@@ -204,6 +206,8 @@ export async function startApp(prefetchConfig: any) {
     // 开始执行 Agent 循环
     console.log(chalk.dim('\n[Agent] 已收到指令，正在思考中...\n'));
     
+    currentAbortController = new AbortController();
+
     try {
       await agent.chat(input, (text: string, isThinking?: boolean) => {
         // 区分思考过程和模型回复
@@ -212,10 +216,12 @@ export async function startApp(prefetchConfig: any) {
         } else {
           process.stdout.write(chalk.green(text));
         }
-      });
+      }, currentAbortController.signal);
       console.log(); // 输出结束后换行
     } catch (error: any) {
       console.error(chalk.red(`\n[系统错误] ${error.message}\n`));
+    } finally {
+      currentAbortController = null;
     }
 
     // 本轮交互结束，恢复等待用户输入
@@ -228,8 +234,14 @@ export async function startApp(prefetchConfig: any) {
 
   // 监听 ctrl+c 事件（SIGINT）
   rl.on('SIGINT', async () => {
-    console.log(chalk.yellow('\n检测到退出信号，再见！'));
-    await globalHooks.trigger('AppExit');
-    process.exit(0);
+    if (currentAbortController) {
+      console.log(chalk.yellow('\n[系统] 正在打断当前任务...'));
+      currentAbortController.abort();
+      // 不退出程序，只是打断当前请求
+    } else {
+      console.log(chalk.yellow('\n检测到退出信号，再见！'));
+      await globalHooks.trigger('AppExit');
+      process.exit(0);
+    }
   });
 }
