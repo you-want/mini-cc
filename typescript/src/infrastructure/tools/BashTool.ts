@@ -58,20 +58,25 @@ export function detectBlockedSleepPattern(command: string): string | null {
  * 3. 长输出截断（防 Token 爆炸）
  * 模拟实现 EndTruncatingAccumulator，保留头尾，中间截断
  */
-export class EndTruncatingAccumulator {
-  private chunks: string[] = [];
-  private totalLength = 0;
-  // 假设限制最大输出为 2000 个字符，防止超长输出爆 Token
-  private readonly MAX_LENGTH = 2000;
+export interface EndTruncatingAccumulator {
+  append: (text: string) => void;
+  toString: () => string;
+}
 
-  append(text: string) {
-    this.chunks.push(text);
-    this.totalLength += text.length;
+export function createEndTruncatingAccumulator(): EndTruncatingAccumulator {
+  const chunks: string[] = [];
+  let totalLength = 0;
+  // 假设限制最大输出为 2000 个字符，防止超长输出爆 Token
+  const MAX_LENGTH = 2000;
+
+  function append(text: string) {
+    chunks.push(text);
+    totalLength += text.length;
   }
 
-  toString(): string {
-    const fullText = this.chunks.join('');
-    if (fullText.length <= this.MAX_LENGTH) {
+  function toString(): string {
+    const fullText = chunks.join('');
+    if (fullText.length <= MAX_LENGTH) {
       return fullText;
     }
     // 截断：保留前面 1000 字和后面 1000 字，中间用提示替换
@@ -79,6 +84,11 @@ export class EndTruncatingAccumulator {
     const tail = fullText.substring(fullText.length - 1000);
     return `${head}\n\n... [输出过长，已自动截断中间的 ${fullText.length - 2000} 个字符以节省 Token] ...\n\n${tail}`;
   }
+
+  return {
+    append,
+    toString
+  };
 }
 
 /**
@@ -146,7 +156,7 @@ export const bashTool: Tool<{ command: string }, string> = {
       });
 
       // 【特性】: 长输出截断（防 Token 爆炸）
-      const stdoutAccumulator = new EndTruncatingAccumulator();
+      const stdoutAccumulator = createEndTruncatingAccumulator();
       if (stdout) {
         stdoutAccumulator.append(stdout.trimEnd() + os.EOL);
       }
@@ -158,7 +168,7 @@ export const bashTool: Tool<{ command: string }, string> = {
       return finalOutput.trim() || '命令执行成功，但没有输出。';
     } catch (error: any) {
       // 执行报错也需要截断，防止报错信息过长
-      const errorAccumulator = new EndTruncatingAccumulator();
+      const errorAccumulator = createEndTruncatingAccumulator();
       errorAccumulator.append(`执行命令时出错:\n${error.message}\n`);
       if (error.stdout) errorAccumulator.append(`[stdout]\n${error.stdout}\n`);
       if (error.stderr) errorAccumulator.append(`[stderr]\n${error.stderr}\n`);

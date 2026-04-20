@@ -31,37 +31,42 @@ export interface AppState {
 type Listener = (state: DeepReadonly<AppState>) => void;
 
 /**
- * 全局状态管理类 (Observer Pattern / 观察者模式)
+ * 全局状态管理接口
+ */
+export interface AppStateStore {
+  getState: () => DeepReadonly<AppState>;
+  setState: (partialState: Partial<AppState>) => void;
+  subscribe: (listener: Listener) => () => void;
+}
+
+/**
+ * 创建全局状态管理器实例 (Observer Pattern / 观察者模式)
  * 
  * 类似于 Redux 或 Zustand。它维护一个单一的全局状态树，
  * 允许组件订阅状态变化并在状态更新时收到通知。
  * 这种模式确保了状态的集中管理和数据流的单向性。
  */
-export class AppStateStore {
-  private state: AppState;
-  private listeners: Set<Listener> = new Set(); // 存储所有订阅的监听器
-
-  constructor(initialState: AppState) {
-    this.state = initialState;
-  }
+export function createAppStateStore(initialState: AppState): AppStateStore {
+  let state: AppState = initialState;
+  const listeners: Set<Listener> = new Set(); // 存储所有订阅的监听器
 
   /**
    * 获取当前状态的只读快照
    */
-  getState(): DeepReadonly<AppState> {
-    return this.state as DeepReadonly<AppState>;
+  function getState(): DeepReadonly<AppState> {
+    return state as DeepReadonly<AppState>;
   }
 
   /**
    * 更新状态并通知所有订阅者
    * @param partialState 包含要更新的字段的偏态对象
    */
-  setState(partialState: Partial<AppState>): void {
-    this.state = {
-      ...this.state,
+  function setState(partialState: Partial<AppState>): void {
+    state = {
+      ...state,
       ...partialState, // 合并新状态
     };
-    this.notify(); // 通知订阅者
+    notify(); // 通知订阅者
   }
 
   /**
@@ -69,26 +74,32 @@ export class AppStateStore {
    * @param listener 回调函数
    * @returns 取消订阅的函数
    */
-  subscribe(listener: Listener): () => void {
-    this.listeners.add(listener);
+  function subscribe(listener: Listener): () => void {
+    listeners.add(listener);
     return () => {
-      this.listeners.delete(listener); // 返回用于解绑的清理函数
+      listeners.delete(listener); // 返回用于解绑的清理函数
     };
   }
 
   /**
    * 触发通知，将最新的只读状态分发给所有监听器
    */
-  private notify(): void {
-    const readonlyState = this.getState();
-    for (const listener of this.listeners) {
+  function notify(): void {
+    const readonlyState = getState();
+    for (const listener of listeners) {
       listener(readonlyState);
     }
   }
+
+  return {
+    getState,
+    setState,
+    subscribe
+  };
 }
 
 // 导出全局单例实例，供应用各层共享访问
-export const globalAppState = new AppStateStore({
+export const globalAppState = createAppStateStore({
   settings: {
     verbose: false,
     mainLoopModel: 'openai',

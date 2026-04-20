@@ -35,54 +35,67 @@ export interface PermissionStrategy {
  * 默认权限策略实现
  * 正常情况下，执行高危工具时应该在这里拦截并询问用户。
  */
-export class DefaultStrategy implements PermissionStrategy {
-  async check(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
-    // 检查白名单和黑名单
-    if (context.allowedTools.has(toolName)) return true;
-    if (context.deniedTools.has(toolName)) return false;
-    
-    // 在真实的终端应用中，这里会调用 readline 询问用户是否允许执行。
-    // 目前为了简化演示，模拟用户自动同意 (Auto-yes)
-    console.log(`[Permissions] (默认策略) 请求用户授权执行: ${toolName}`);
-    return true; 
-  }
+export function createDefaultStrategy(): PermissionStrategy {
+  return {
+    async check(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
+      // 检查白名单和黑名单
+      if (context.allowedTools.has(toolName)) return true;
+      if (context.deniedTools.has(toolName)) return false;
+      
+      // 在真实的终端应用中，这里会调用 readline 询问用户是否允许执行。
+      // 目前为了简化演示，模拟用户自动同意 (Auto-yes)
+      console.log(`[Permissions] (默认策略) 请求用户授权执行: ${toolName}`);
+      return true; 
+    }
+  };
 }
 
 /**
  * 自动权限策略实现
  * 在全自动模式下使用，跳过所有用户确认。
  */
-export class AutoStrategy implements PermissionStrategy {
-  async check(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
-    console.log(`[Permissions] (自动策略) 自动批准工具执行: ${toolName}`);
-    return true; // 直接批准一切操作
-  }
+export function createAutoStrategy(): PermissionStrategy {
+  return {
+    async check(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
+      console.log(`[Permissions] (自动策略) 自动批准工具执行: ${toolName}`);
+      return true; // 直接批准一切操作
+    }
+  };
 }
 
 /**
- * 权限管理器 (Context / 环境角色)
+ * 权限管理器接口
+ */
+export interface PermissionManager {
+  requestPermission: (toolName: string, args: any, context: PermissionContext) => Promise<boolean>;
+}
+
+/**
+ * 创建权限管理器实例 (Context / 环境角色)
  * 维护所有的策略实例，并根据上下文指定的策略进行权限请求的路由分发。
  */
-export class PermissionManager {
-  private strategies: Map<PermissionStrategyType, PermissionStrategy> = new Map();
+export function createPermissionManager(): PermissionManager {
+  const strategies: Map<PermissionStrategyType, PermissionStrategy> = new Map();
 
-  constructor() {
-    // 注册内置的权限策略
-    this.strategies.set('default', new DefaultStrategy());
-    this.strategies.set('auto', new AutoStrategy());
-  }
+  // 注册内置的权限策略
+  strategies.set('default', createDefaultStrategy());
+  strategies.set('auto', createAutoStrategy());
 
   /**
    * 向指定的策略请求执行权限
    */
-  async requestPermission(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
-    const strategy = this.strategies.get(context.strategy);
+  async function requestPermission(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
+    const strategy = strategies.get(context.strategy);
     if (!strategy) {
       throw new Error(`未找到权限策略: ${context.strategy}`);
     }
     return strategy.check(toolName, args, context);
   }
+
+  return {
+    requestPermission
+  };
 }
 
 // 导出全局单例权限管理器
-export const globalPermissionManager = new PermissionManager();
+export const globalPermissionManager = createPermissionManager();
