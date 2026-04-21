@@ -381,70 +381,163 @@
         </div>
     </section>
 
-    <!-- Showcase & Docs -->
-    <section id="docs" class="py-32">
+    <!-- Showcase Section -->
+    <section id="showcase" class="py-32 border-b border-[#333]">
         <div class="max-w-[1400px] mx-auto px-6">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
-                
-                <!-- Capabilities -->
-                <div class="lg:col-span-7">
-                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
-                        <span data-lang="en">Capabilities</span>
-                        <span data-lang="zh">能力展示</span>
-                    </h2>
-                    
-                    <div class="space-y-12">
-                        <div class="border border-[#333] bg-surface">
-                            <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
-                                <span class="text-accent">E2E_APP_GENERATION</span>
-                                <span class="text-gray-500">wuziqi.html</span>
-                            </div>
-                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                <div>
-                                    <h3 class="text-2xl font-bold mb-4">
-                                        <span data-lang="en">Zero to App</span>
-                                        <span data-lang="zh">从零构建应用</span>
-                                    </h3>
-                                    <p class="text-gray-400 text-sm">
-                                        <span data-lang="en">"Write a Gomoku web game." The agent autonomously thinks, creates files, writes HTML/JS/CSS, and delivers a playable app.</span>
-                                        <span data-lang="zh">"写一个五子棋网页游戏。" 智能体自主思考、创建文件、编写 HTML/JS/CSS，最终交付可玩的应用。</span>
-                                    </p>
-                                </div>
-                                <img src="images/wuziqi.png" alt="Gomoku" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all">
-                            </div>
+            <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
+                <span data-lang="en">Capabilities</span>
+                <span data-lang="zh">能力展示</span>
+            </h2>
+            
+            <div class="space-y-12">
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">BASH_TOOL_SECURITY</span>
+                        <span class="text-gray-500">BashTool.ts</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">BashTool Security Sandbox</span>
+                                <span data-lang="zh">BashTool 防爆拦截机制</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm mb-4">
+                                <span data-lang="en">Intercepts blocking commands like `sleep 15` to prevent the agent from freezing the main thread.</span>
+                                <span data-lang="zh">精准识别长时的“孤狼” sleep 命令并拦截，防止主进程被无意义阻塞，实现极强的安全与防爆机制。</span>
+                            </p>
                         </div>
-
-                        <div class="border border-[#333] bg-surface">
-                            <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
-                                <span class="text-accent">CLI_EASTER_EGG</span>
-                                <span class="text-gray-500">buddy.ts</span>
-                            </div>
-                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                <div class="order-2 md:order-1">
-                                    <img src="images/buddy.png" alt="Buddy" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all">
-                                </div>
-                                <div class="order-1 md:order-2">
-                                    <h3 class="text-2xl font-bold mb-4">
-                                        <span data-lang="en">CLI Pet</span>
-                                        <span data-lang="zh">终端宠物</span>
-                                    </h3>
-                                    <p class="text-gray-400 text-sm">
-                                        <span data-lang="en">Type `/buddy` in the terminal. Shows off rich text rendering and PRNG capabilities directly in the CLI.</span>
-                                        <span data-lang="zh">在终端输入 `/buddy`。直接在命令行中展示富文本渲染和伪随机生成能力。</span>
-                                    </p>
-                                </div>
-                            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <img src="images/p1.png" alt="BashTool 1" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                            <img src="images/p2.png" alt="BashTool 2" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
                         </div>
                     </div>
                 </div>
 
-                <!-- Documentation -->
-                <div class="lg:col-span-5">
-                    <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
-                        <span data-lang="en">Documentation</span>
-                        <span data-lang="zh">项目文档</span>
-                    </h2>
-                    
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">MEMORY_MANAGER</span>
+                        <span class="text-gray-500">MemoryManager.ts</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="lg:order-2">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">Minimalist Memory Manager</span>
+                                <span data-lang="zh">大道至简的记忆管理器</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm mb-4">
+                                <span data-lang="en">Pure file-system-based two-step memory. Triggers automatic truncation when limits are exceeded to save tokens.</span>
+                                <span data-lang="zh">纯文件系统两步走法则。当记录超过限制时，触发记忆防爆机制自动截断，确保上下文精简且不超 Token。</span>
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:order-1">
+                            <img src="images/p3.png" alt="MemoryManager 1" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                            <img src="images/p4.png" alt="MemoryManager 2" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">AGENT_TOOL_SANDBOX</span>
+                        <span class="text-gray-500">AgentTool.ts</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">Agent Sub-processes & Sandbox</span>
+                                <span data-lang="zh">AgentTool：影分身与安全沙盒</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm mb-4">
+                                <span data-lang="en">Spawns sub-agents in isolated Git worktrees to test unstable scripts without affecting the main branch.</span>
+                                <span data-lang="zh">派生子代理在完全平行、物理隔离的 Git worktree 沙箱目录中执行任务，完成后自动清理，主分支毫发无损。</span>
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <img src="images/p5.png" alt="AgentTool 1" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                            <img src="images/p6.png" alt="AgentTool 2" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">MCP_PLUGINS</span>
+                        <span class="text-gray-500">MCPTool.ts</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="lg:order-2">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">MCP Plugins & Transparent Proxy</span>
+                                <span data-lang="zh">MCP 插件系统与透明代理</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm mb-4">
+                                <span data-lang="en">Full support for the Model Context Protocol. Transparently proxies remote tools via stdio IPC.</span>
+                                <span data-lang="zh">完全支持官方 MCP！通过 stdio 跨进程启动插件，并利用透明代理将远端工具封装成本地调用，实现零耦合扩展。</span>
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:order-1">
+                            <img src="images/p7.png" alt="MCP 1" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                            <img src="images/p8.png" alt="MCP 2" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">E2E_APP_GENERATION</span>
+                        <span class="text-gray-500">wuziqi.html</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">Zero to App</span>
+                                <span data-lang="zh">从零构建应用</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm">
+                                <span data-lang="en">"Write a Gomoku web game." The agent autonomously thinks, creates files, writes HTML/JS/CSS, and delivers a playable app.</span>
+                                <span data-lang="zh">"写一个五子棋网页游戏。" 智能体自主思考、创建文件、编写 HTML/JS/CSS，最终交付可玩的应用。</span>
+                            </p>
+                        </div>
+                        <img src="images/wuziqi.png" alt="Gomoku" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                    </div>
+                </div>
+
+                <div class="border border-[#333] bg-surface">
+                    <div class="border-b border-[#333] p-4 flex justify-between font-mono text-xs">
+                        <span class="text-accent">CLI_EASTER_EGG</span>
+                        <span class="text-gray-500">buddy.ts</span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="lg:order-2">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <span data-lang="en">CLI Pet</span>
+                                <span data-lang="zh">终端宠物</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm">
+                                <span data-lang="en">Type `/buddy` in the terminal. Shows off rich text rendering and PRNG capabilities directly in the CLI.</span>
+                                <span data-lang="zh">在终端输入 `/buddy`。直接在命令行中展示富文本渲染和伪随机生成能力。</span>
+                            </p>
+                        </div>
+                        <div class="lg:order-1">
+                            <img src="images/buddy.png" alt="Buddy" class="w-full border border-[#333] grayscale hover:grayscale-0 transition-all" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Docs Section -->
+    <section id="docs" class="py-32">
+        <div class="max-w-[1400px] mx-auto px-6">
+            <h2 class="text-4xl font-bold uppercase tracking-tighter mb-12">
+                <span data-lang="en">Documentation</span>
+                <span data-lang="zh">项目文档</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <!-- Documentation Links -->
+                <div class="lg:col-span-7">
                     <div class="flex flex-col border border-[#333] bg-surface">
                         <a href="https://github.com/you-want/mini-cc/tree/main/docs" target="_blank" class="flex items-center space-x-4 p-4 border-b border-[#333] hover:bg-[#1a1a1a] hover:text-accent transition-colors group">
                             <span class="font-mono text-gray-500 group-hover:text-accent">00.</span>
@@ -496,8 +589,11 @@
                             </span>
                         </a>
                     </div>
+                </div>
 
-                    <div class="mt-12 p-8 border border-[#333] bg-accent text-dark">
+                <!-- Quick Start -->
+                <div class="lg:col-span-5">
+                    <div class="p-8 border border-[#333] bg-accent text-dark h-full flex flex-col justify-center">
                         <h3 class="text-2xl font-bold uppercase mb-4">
                             <span data-lang="en">Quick Start</span>
                             <span data-lang="zh">快速开始</span>
@@ -524,6 +620,12 @@
         </p>
     </footer>
 
+    <!-- Image Lightbox Overlay -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-[#000000cc] flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <img id="lightbox-img" src="" alt="Zoomed Image" class="max-w-[95vw] max-h-[95vh] object-contain scale-95 transition-transform duration-300 shadow-2xl rounded-md cursor-zoom-out">
+        <button id="lightbox-close" class="absolute top-6 right-6 text-white hover:text-accent font-mono text-4xl transition-colors cursor-pointer">&times;</button>
+    </div>
+
     <!-- Language Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -547,6 +649,43 @@
             
             if (toggleBtn) toggleBtn.addEventListener('click', toggleLang);
             if (toggleBtnMobile) toggleBtnMobile.addEventListener('click', toggleLang);
+
+            // Image Lightbox Logic
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxClose = document.getElementById('lightbox-close');
+            const showcaseImages = document.querySelectorAll('#showcase img');
+
+            const openLightbox = (src) => {
+                lightboxImg.src = src;
+                lightbox.classList.remove('opacity-0', 'pointer-events-none');
+                lightbox.classList.add('opacity-100', 'pointer-events-auto');
+                
+                // Slight delay to trigger CSS transition
+                setTimeout(() => {
+                    lightboxImg.classList.remove('scale-95');
+                    lightboxImg.classList.add('scale-100');
+                }, 10);
+            };
+
+            const closeLightbox = () => {
+                lightbox.classList.remove('opacity-100', 'pointer-events-auto');
+                lightbox.classList.add('opacity-0', 'pointer-events-none');
+                lightboxImg.classList.remove('scale-100');
+                lightboxImg.classList.add('scale-95');
+            };
+
+            showcaseImages.forEach(img => {
+                img.classList.add('cursor-zoom-in');
+                img.addEventListener('click', () => openLightbox(img.src));
+            });
+
+            lightbox.addEventListener('click', (e) => {
+                // Close if clicked on background or close button
+                if (e.target === lightbox || e.target === lightboxImg || e.target === lightboxClose) {
+                    closeLightbox();
+                }
+            });
         });
     </script>
 </body>
