@@ -119,129 +119,42 @@ export async function startApp(prefetchConfig: any) {
     }
   }
 
-  // 创建 readline 接口，以便监听用户的命令行交互输入
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: chalk.cyan('mini-cc> ')
-  });
+  // 启动基于 Ink/React 的交互界面
+  const { render } = require('ink');
+  const React = require('react');
+  const { App } = require('./components/App');
 
-  // 如果在启动时（并行预加载阶段）捕获到了用户的提前输入，直接写入 readline 缓冲区
-  if (earlyInput) {
-    rl.write(earlyInput);
-  }
-
-  console.log(chalk.bold.blue('\n=== 欢迎使用 mini-cc ===\n'));
-  console.log(chalk.gray('输入您的需求，我将为您编写代码或执行系统操作。'));
-  console.log(chalk.gray('键入 "exit" 或 "quit" 退出程序。\n'));
-
-  // 显示帮助信息
-  function showHelp() {
-    console.log(chalk.cyan('\n=== 可用命令 ==='));
-    console.log(chalk.gray('  /help     - 显示此帮助信息'));
-    console.log(chalk.gray('  /clear    - 清空当前对话历史'));
-    console.log(chalk.gray('  /buddy    - 召唤电子宠物彩蛋'));
-    console.log(chalk.gray('  exit/quit - 退出程序'));
-    console.log(chalk.cyan('==============\n'));
-  }
-
-  // 显示命令行前缀提示符
-  rl.prompt();
-
-  // 监听终端输入的回车事件
-  let currentAbortController: AbortController | null = null;
-
-  rl.on('line', async (line) => {
-    const input = line.trim();
-
-    // 忽略空输入
-    if (!input) {
-      rl.prompt();
-      return;
+  // 处理清空对话命令逻辑
+  const handleClear = () => {
+    if (PROVIDER === 'openai') {
+      const apiKey = process.env.OPENAI_API_KEY || '';
+      const baseURL = process.env.OPENAI_BASE_URL;
+      const modelName = process.env.MODEL_NAME || 'qwen3.6-plus';
+      providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
+    } else {
+      const apiKey = process.env.ANTHROPIC_API_KEY || '';
+      const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
+      providerInstance = createAnthropicProvider(apiKey, modelName);
     }
+    const newAgent = createAgent(providerInstance);
+    Object.assign(agent, newAgent);
+  };
 
-    // 处理退出命令
-    if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
-      console.log(chalk.green('再见！'));
-      await globalHooks.trigger('AppExit');
-      process.exit(0);
-    }
-
-    // 处理帮助命令
-    if (input.toLowerCase() === '/help') {
-      showHelp();
-      rl.prompt();
-      return;
-    }
-
-    // 处理清空对话命令
-    if (input.toLowerCase() === '/clear') {
-      // 重新创建 provider 实例以清空对话历史
-      if (PROVIDER === 'openai') {
-        const apiKey = process.env.OPENAI_API_KEY || '';
-        const baseURL = process.env.OPENAI_BASE_URL;
-        const modelName = process.env.MODEL_NAME || 'qwen3.6-plus';
-        providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
-      } else {
-        const apiKey = process.env.ANTHROPIC_API_KEY || '';
-        const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
-        providerInstance = createAnthropicProvider(apiKey, modelName);
-      }
-      // 重新实例化 Agent
-      const newAgent = createAgent(providerInstance);
-      // 替换全局 agent 引用（这里使用一个技巧来更新 agent 实例）
-      Object.assign(agent, newAgent);
-      console.log(chalk.green('✓ 对话历史已清空。'));
-      rl.prompt();
-      return;
-    }
-
-    // 检查是否触发彩蛋系统 (文档 08: 电子宠物)
-    if (input.toLowerCase() === '/buddy') {
-      spawnBuddy('EasterEgg');
-      rl.prompt();
-      return;
-    }
-
-    // 开始执行 Agent 循环
-    console.log(chalk.dim('\n[Agent] 已收到指令，正在思考中...\n'));
-    
-    currentAbortController = new AbortController();
-
-    try {
-      await agent.chat(input, (text: string, isThinking?: boolean) => {
-        // 区分思考过程和模型回复
-        if (isThinking) {
-          process.stdout.write(chalk.dim(text));
-        } else {
-          process.stdout.write(chalk.green(text));
-        }
-      }, currentAbortController.signal);
-      console.log(); // 输出结束后换行
-    } catch (error: any) {
-      console.error(chalk.red(`\n[系统错误] ${error.message}\n`));
-    } finally {
-      currentAbortController = null;
-    }
-
-    // 本轮交互结束，恢复等待用户输入
-    rl.prompt();
-  }).on('close', async () => {
-    console.log(chalk.green('\n再见！'));
+  const handleExit = async () => {
     await globalHooks.trigger('AppExit');
     process.exit(0);
-  });
+  };
 
-  // 监听 ctrl+c 事件（SIGINT）
-  rl.on('SIGINT', async () => {
-    if (currentAbortController) {
-      console.log(chalk.yellow('\n[系统] 正在打断当前任务...'));
-      currentAbortController.abort();
-      // 不退出程序，只是打断当前请求
-    } else {
-      console.log(chalk.yellow('\n检测到退出信号，再见！'));
-      await globalHooks.trigger('AppExit');
-      process.exit(0);
-    }
+  const { waitUntilExit } = render(
+    React.createElement(App, {
+      agent,
+      onExit: handleExit,
+      onClear: handleClear,
+      initialInput: earlyInput
+    })
+  );
+
+  waitUntilExit().catch((err: any) => {
+    console.error('Terminal UI exited with error:', err);
   });
 }
