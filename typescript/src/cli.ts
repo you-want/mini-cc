@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// @ts-ignore - 修复 Bun 打包后 yoga-layout-prebuilt 报错 ReferenceError: _a is not defined
+global._a = undefined;
+
 // 屏蔽 Node.js 21+ 关于 punycode 的弃用警告
 // 这样可以避免破坏命令行交互界面的视觉效果
 const originalEmit = process.emit;

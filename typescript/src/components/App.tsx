@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Box } from '../ink/components/Box';
 import { Text } from '../ink/components/Text';
-import TextInput from 'ink-text-input';
+import TextInputModule from 'ink-text-input';
 import { VirtualMessageList } from './VirtualMessageList';
+
+// 兼容 Bun 打包后的 CommonJS 导出格式
+const TextInput = typeof TextInputModule === 'function' ? TextInputModule : (TextInputModule as any).default;
 
 interface AppProps {
   agent: any;
