@@ -92,4 +92,5 @@ target/
 # ========================================
 typescript/.mini-cc/
 typescript/.ai_memory/
+typescript/bin/
 
