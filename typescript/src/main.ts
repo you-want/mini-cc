@@ -36,9 +36,18 @@ import { spawnBuddy } from './buddy/companion';
 import { globalHooks } from './infrastructure/hooks/hooks';
 // 引入 stopCapturingEarlyInput 模块，用于停止早期输入捕获
 import { stopCapturingEarlyInput } from './infrastructure/utils/earlyInput';
+// 引入性能分析器
+import { profileCheckpoint, dumpStartupProfile } from './utils/startupProfiler';
+// 引入遥测与动态配置
+import { logEvent, getDynamicConfig_CACHED_MAY_BE_STALE } from './services/analytics/firstPartyEventLogger';
 
 // 应用启动函数，负责初始化大模型服务商、触发 AppStart 生命周期钩子等
 export async function startApp(prefetchConfig: any) {
+  profileCheckpoint('startApp_entry');
+  
+  // 记录应用启动遥测事件
+  logEvent('app_start', { provider: process.env.PROVIDER || 'openai' });
+
   // 获取早期的用户输入，避免吞键
   // 对应 01-architecture.md 里的 "Early Input Capture" 机制
   const earlyInput = stopCapturingEarlyInput();
@@ -141,11 +150,20 @@ export async function startApp(prefetchConfig: any) {
   };
 
   const handleExit = async () => {
+    logEvent('app_exit');
     await globalHooks.trigger('AppExit');
     process.exit(0);
   };
 
-  const { waitUntilExit } = render(
+  profileCheckpoint('start_react_render');
+  
+  // 演示：检查动态配置，如果为真则可能展示某些新特性
+  const isNewUIEnabled = getDynamicConfig_CACHED_MAY_BE_STALE('enable_new_ui');
+  if (isNewUIEnabled) {
+    // 这里可以是特性开关控制的代码逻辑
+  }
+
+  const { waitUntilExit, clear } = render(
     React.createElement(App, {
       agent,
       onExit: handleExit,
@@ -153,6 +171,15 @@ export async function startApp(prefetchConfig: any) {
       initialInput: earlyInput
     })
   );
+
+  // 如果传递了 --profile 参数，在渲染完成后清屏并打印出启动耗时
+  if (process.argv.includes('--profile')) {
+    setTimeout(() => {
+      clear();
+      dumpStartupProfile();
+      process.exit(0);
+    }, 500);
+  }
 
   waitUntilExit().catch((err: any) => {
     console.error('Terminal UI exited with error:', err);

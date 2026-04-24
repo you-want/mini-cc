@@ -17,6 +17,10 @@ process.emit = function (name: string, data: any, ...args: any[]) {
   return originalEmit.apply(process, [name, data, ...args]);
 };
 
+import { profileCheckpoint } from './utils/startupProfiler';
+
+profileCheckpoint('cli_tsx_entry');
+
 // 获取命令行参数
 const args = process.argv.slice(2);
 
@@ -39,6 +43,7 @@ if (args.length > 0) {
     console.log('  -v, --version  Show version');
     console.log('  -h, --help     Show help');
     console.log('  --health       Health check');
+    console.log('  --profile      Dump startup performance profile');
     process.exit(0);
   }
   if (cmd === '--health') {
@@ -66,13 +71,19 @@ const prefetchConfig = async () => {
 // 立即触发 I/O 请求，不使用 await 阻塞主线程
 const prefetchPromise = prefetchConfig();
 
+profileCheckpoint('main_tsx_imports_starting');
+
 // 【动态加载主模块】
 // 此时 Node.js 主线程开始解析庞大的依赖树，而底层的 libuv 线程池正在处理上面的 prefetchConfig I/O。
 // 两者并行进行，大大缩短了冷启动时间！
 import('./main')
   .then(async (mainModule) => {
+    profileCheckpoint('main_tsx_imports_loaded');
+    
     // 等主模块代码加载完成时，再等待预加载 I/O 任务的结果（可能早就完成了）
     const config = await prefetchPromise;
+    profileCheckpoint('prefetch_config_ready');
+    
     // 启动主应用
     mainModule.startApp(config);
   })

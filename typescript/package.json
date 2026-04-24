@@ -9,6 +9,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "tsc",
+    "build:bun": "bun build ./src/cli.ts --compile --outfile=bin/mini-cc",
     "start": "node dist/cli.js",
     "dev": "ts-node src/cli.ts",
     "demo:ui": "ts-node --compilerOptions '{\"module\":\"CommonJS\"}' src/demo-ui.tsx"
