@@ -1,4 +1,4 @@
-# Mini-CC (Mini Claude Code)
+# Mini-CC
 
 > 一个极简架构的轻量级 AI 编程智能体，剖析、学习和复刻大厂 Agent 架构的开源教学项目。
 
