@@ -1,0 +1,42 @@
+name: mini-cc TypeScript Tests
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'mini-cc/typescript/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'mini-cc/typescript/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: mini-cc/typescript
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: mini-cc/typescript/package-lock.json # Or pnpm-lock.yaml / yarn.lock
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run Build
+      run: npm run build
+      
+    - name: Run Tests
+      run: npm test
