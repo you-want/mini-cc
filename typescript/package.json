@@ -6,6 +6,24 @@
   "bin": {
     "mini-cc": "dist/cli.js"
   },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mini-cc",
+    "ai",
+    "agent",
+    "claude",
+    "code",
+    "cli",
+    "terminal",
+    "mcp"
+  ],
+  "author": "Rain9",
+  "license": "MIT",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "tsc",

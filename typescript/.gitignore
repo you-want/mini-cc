@@ -1,0 +1,6 @@
+node_modules
+dist
+.env
+.ai_memory
+bin/
+.mini-cc/
