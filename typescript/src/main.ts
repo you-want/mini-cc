@@ -123,6 +123,15 @@ export async function startApp(prefetchConfig: any) {
         process.exit(0);
       }
 
+      if (inputArg.trim().toLowerCase() === '/voice') {
+        const { triggerVoiceMode } = require('./commands/voice');
+        triggerVoiceMode().then((msg: string) => {
+          console.log(msg);
+          process.exit(0);
+        });
+        return; // 等待 promise 解决
+      }
+
       try {
         // 直接调用 agent，将结果流式输出到 stdout，完成后退出
         await agent.chat(inputArg, (textChunk: string, isThinking?: boolean) => {

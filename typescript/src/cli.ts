@@ -65,6 +65,13 @@ if (args.length > 0) {
     console.log(`🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}`);
     process.exit(0);
   }
+  if (cmd === '/voice') {
+    const { triggerVoiceMode } = require('./commands/voice');
+    triggerVoiceMode().then((msg: string) => {
+      console.log(msg);
+      process.exit(0);
+    });
+  }
 }
 
 // 【防吞键机制：早期输入捕获】

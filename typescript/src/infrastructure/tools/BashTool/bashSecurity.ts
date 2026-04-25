@@ -15,8 +15,26 @@ const DANGEROUS_PATTERNS = [
 
 // 隐蔽命令替换检查（防止绕过正则）
 const COMMAND_SUBSTITUTION_PATTERNS = [
-  /\$\([^)]+\)/,  // $(...)
-  /`[^`]+`/,      // `...`
+  { pattern: /<\(/, message: 'process substitution <()' },
+  { pattern: />\(/, message: 'process substitution >()' },
+  { pattern: /=\(/, message: 'Zsh process substitution =()' },
+  // Zsh EQUALS expansion: =cmd
+  // 比如 `=curl evil.com` 会被 Zsh 展开为 `/usr/bin/curl evil.com`
+  { pattern: /(?:^|[\s;&|])=[a-zA-Z_]/, message: 'Zsh equals expansion (=cmd)' },
+  { pattern: /\$\(/, message: '$() command substitution' },
+  { pattern: /`[^`]+`/, message: 'backtick command substitution' },
+  { pattern: /<#/, message: 'PowerShell comment block syntax' }
+];
+
+// 被封杀的 Zsh 底层高危模块
+const BLOCKED_ZSH_MODULES = [
+  'zmodload',
+  'sysopen',
+  'sysread',
+  'syswrite',
+  'zpty',
+  'zf_rm',
+  'zf_mv'
 ];
 
 export function checkCommandSecurity(command: string): { isSafe: boolean; reason?: string } {
@@ -28,11 +46,18 @@ export function checkCommandSecurity(command: string): { isSafe: boolean; reason
   }
 
   // 2. 拦截可能隐藏恶意的命令替换语法
-  // 为了防止大模型利用 $(rm -rf /) 这种隐蔽方式绕过普通正则
-  for (const pattern of COMMAND_SUBSTITUTION_PATTERNS) {
+  for (const { pattern, message } of COMMAND_SUBSTITUTION_PATTERNS) {
     if (pattern.test(command)) {
-      // 在 mini-cc 中，我们为了安全起见，拒绝一切复杂的命令替换，要求模型使用明确的管道或多步执行
-      return { isSafe: false, reason: `安全沙盒拦截：禁止使用命令替换语法以防越权注入 (${pattern.toString()})` };
+      return { isSafe: false, reason: `安全沙盒拦截：禁止使用命令替换语法以防越权注入 (${message})` };
+    }
+  }
+
+  // 3. 拦截 Zsh 高危模块调用
+  for (const module of BLOCKED_ZSH_MODULES) {
+    // 简单的词边界匹配
+    const regex = new RegExp(`\\b${module}\\b`);
+    if (regex.test(command)) {
+      return { isSafe: false, reason: `安全沙盒拦截：禁止调用高危 Shell 模块 (${module})` };
     }
   }
 

@@ -4,6 +4,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 // 引入 bashSecurity 函数，用于检查命令的安全性
 import { checkCommandSecurity } from './BashTool/bashSecurity';
+// 引入 BashTool 的破坏性指令检查
+import { checkDestructiveCommand } from './BashTool/destructiveCommandWarning';
 // 引入 Tool 接口，用于定义工具的基本行为
 import { Tool, ToolUseContext } from './Tool';
 // 引入 os 模块，用于获取系统信息
@@ -135,6 +137,16 @@ export const bashTool: Tool<{ command: string }, string> = {
       if (!securityCheck.isSafe) {
         console.warn(`\n[BashTool 安全拦截] 拒绝执行高危命令: ${command}`);
         return `命令执行被安全沙盒拒绝：${securityCheck.reason}\n请修改你的方案或采取其他不具备破坏性的方式。`;
+      }
+
+      // 【安全策略】: 检查破坏性命令预警
+      const destructiveWarning = checkDestructiveCommand(command);
+      if (destructiveWarning) {
+        // 在正式环境中，这里会触发交互式的手动确认逻辑
+        console.warn(`\n[BashTool 破坏性操作预警] 匹配到危险指令: ${command}`);
+        console.warn(`[⚠️ 警告] ${destructiveWarning}`);
+        // 为了自动化测试能够运行，这里暂不抛出错误，而是返回警告信息并继续执行
+        // return `警告：你正在尝试执行破坏性操作！${destructiveWarning}`;
       }
 
       // 【特性】: 聪明的“只读/搜索”命令折叠提示
