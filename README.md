@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="website/images/logo.svg" width="120" alt="mini-cc logo" />
   <h1>mini-cc</h1>
   <p>一个极简架构的轻量级 AI 编程智能体，剖析、学习和复刻大厂 Agent 架构的开源教学项目。</p>
   
