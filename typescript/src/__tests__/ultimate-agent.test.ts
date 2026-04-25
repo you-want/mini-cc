@@ -1,7 +1,7 @@
-import { createCliExecutor } from '../utils/computerUse/executor';
-import { getChromeBridgeUrl } from '../utils/claudeInChrome/mcpServer';
-import { getAllBrowserDataPathsPortable } from '../utils/claudeInChrome/setupPortable';
-import { ExitPlanModeScanner, __ULTRAPLAN_TELEPORT_LOCAL__ } from '../utils/ultraplan/ccrSession';
+import { createCliExecutor } from '../architecture-mocks/computerUse/executor';
+import { getChromeBridgeUrl } from '../architecture-mocks/claudeInChrome/mcpServer';
+import { getAllBrowserDataPathsPortable } from '../architecture-mocks/claudeInChrome/setupPortable';
+import { ExitPlanModeScanner, __ULTRAPLAN_TELEPORT_LOCAL__ } from '../architecture-mocks/ultraplan/ccrSession';
 import * as os from 'os';
 
 describe('Ultimate Agent Capabilities (Chapter 10)', () => {
