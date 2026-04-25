@@ -53,6 +53,18 @@ if (args.length > 0) {
     console.log('OK (Fast-path)');
     process.exit(0);
   }
+  if (cmd === '/buddy') {
+    const buddyModule = require('./buddy/companion');
+    const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');
+    const bones = buddyModule.generateBones(seed);
+    
+    const speciesName = bones.species === 'duck' ? '🦆 小黄鸭 (Duck)' : '🐙 小章鱼 (Octopus)';
+    const shinyText = bones.shiny ? '✨ 是 (Shiny!)' : '否';
+    const statsText = Object.entries(bones.stats).map(([k, v]) => `${k}: ${v}`).join(' | ');
+    
+    console.log(`🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}`);
+    process.exit(0);
+  }
 }
 
 // 【防吞键机制：早期输入捕获】

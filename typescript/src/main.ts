@@ -109,6 +109,20 @@ export async function startApp(prefetchConfig: any) {
     const inputArg = process.argv.slice(2).filter(arg => arg !== '-p' && arg !== '--print').join(' ');
     
     if (inputArg) {
+      if (inputArg.trim().toLowerCase().startsWith('/buddy')) {
+        const buddyModule = require('./buddy/companion');
+        const args = inputArg.trim().split(/\s+/);
+        const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');
+        const bones = buddyModule.generateBones(seed);
+        
+        const speciesName = bones.species === 'duck' ? '🦆 小黄鸭 (Duck)' : '🐙 小章鱼 (Octopus)';
+        const shinyText = bones.shiny ? '✨ 是 (Shiny!)' : '否';
+        const statsText = Object.entries(bones.stats).map(([k, v]) => `${k}: ${v}`).join(' | ');
+        
+        console.log(`🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}`);
+        process.exit(0);
+      }
+
       try {
         // 直接调用 agent，将结果流式输出到 stdout，完成后退出
         await agent.chat(inputArg, (textChunk: string, isThinking?: boolean) => {

@@ -26,7 +26,7 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
   const handleSubmit = async (query: string) => {
     if (!query.trim() || isLoading) return;
 
-    const lowerQuery = query.toLowerCase();
+    const lowerQuery = query.trim().toLowerCase();
     
     // 处理特殊指令
     if (lowerQuery === 'exit' || lowerQuery === 'quit') {
@@ -38,6 +38,25 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
       setMessages([{ id: Date.now().toString(), content: '✓ 对话历史已清空。' }]);
       setInput('');
       onClear();
+      return;
+    }
+
+    if (lowerQuery.startsWith('/buddy')) {
+      const buddyModule = require('../buddy/companion');
+      const args = query.trim().split(/\s+/);
+      // 支持自定义种子，如果没有提供则使用系统用户名或默认值
+      const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');
+      const bones = buddyModule.generateBones(seed);
+      
+      const speciesName = bones.species === 'duck' ? '🦆 小黄鸭 (Duck)' : '🐙 小章鱼 (Octopus)';
+      const shinyText = bones.shiny ? '✨ 是 (Shiny!)' : '否';
+      const statsText = Object.entries(bones.stats).map(([k, v]) => `${k}: ${v}`).join(' | ');
+      
+      setMessages(prev => [
+        ...prev, 
+        { id: `buddy-${Date.now()}`, content: `🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}` }
+      ]);
+      setInput('');
       return;
     }
 
