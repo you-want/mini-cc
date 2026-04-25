@@ -5,6 +5,7 @@ import { Text } from '../ink/components/Text';
 import TextInputModule from 'ink-text-input';
 import { VirtualMessageList } from './VirtualMessageList';
 
+
 // 兼容 Bun 打包后的 CommonJS 导出格式
 const TextInput = typeof TextInputModule === 'function' ? TextInputModule : (TextInputModule as any).default;
 
@@ -156,7 +157,8 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
     } catch (err: any) {
       setMessages(prev => [
         ...prev,
-        { id: `err-${Date.now()}`, content: `[系统错误]: ${err.message}` }
+        { id: `err-${Date.now()}`, content: `[网络错误]: 请检查您的 API_KEY 或网络代理。
+详细信息: ${err.message}` }
       ]);
     } finally {
       setIsLoading(false);
@@ -166,7 +168,7 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
   return (
     <Box flexDirection="column" width="100%">
       {/* 虚拟滚动的消息列表区 */}
-      <Box flexDirection="column">
+      <Box flexDirection="column" width="100%">
         <VirtualMessageList messages={messages} columns={80} />
       </Box>
 

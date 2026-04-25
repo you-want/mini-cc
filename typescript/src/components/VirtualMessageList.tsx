@@ -17,9 +17,21 @@ function useVirtualScroll(scrollRef: any, keys: string[], columns: number) {
 }
 
 function VirtualItem({ msg }: { msg: { id: string; content: string } }) {
+  const isUser = msg.content.startsWith('[You]');
+  const isError = msg.content.startsWith('[网络错误]');
+  const isSys = msg.content.startsWith('[系统错误]') || msg.content.startsWith('✓') || msg.content.startsWith('🐾') || isError;
+
   return (
     <Box flexDirection="row">
-      <Text>{msg.content}</Text>
+      {isError ? (
+        <Text color="red">{msg.content}</Text>
+      ) : isUser ? (
+        <Text color="cyan">{msg.content}</Text>
+      ) : isSys ? (
+        <Text color="yellow">{msg.content}</Text>
+      ) : (
+        <Text>{msg.content}</Text>
+      )}
     </Box>
   );
 }
