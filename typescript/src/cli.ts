@@ -53,6 +53,44 @@ if (args.length > 0) {
     console.log('OK (Fast-path)');
     process.exit(0);
   }
+  if (cmd === 'config') {
+    const configManager = require('./utils/configManager');
+    const subCmd = args[1];
+    
+    if (subCmd === 'set' && args.length >= 3) {
+      // 允许类似 config set API_KEY=xxx 或者 config set API_KEY xxx
+      const keyValue = args.slice(2).join(' ');
+      let key = '';
+      let value = '';
+      
+      if (keyValue.includes('=')) {
+        const parts = keyValue.split('=');
+        key = parts[0];
+        value = parts.slice(1).join('=');
+      } else if (args.length === 4) {
+        key = args[2];
+        value = args[3];
+      } else {
+        console.error('Usage: mini-cc config set KEY=VALUE or mini-cc config set KEY VALUE');
+        process.exit(1);
+      }
+      
+      configManager.setConfigValue(key, value);
+      console.log(`✓ Configuration saved: ${key}=${value}`);
+      process.exit(0);
+    } else if (subCmd === 'get' && args.length === 3) {
+      const key = args[2];
+      const value = configManager.getConfigValue(key);
+      console.log(value !== undefined ? value : '');
+      process.exit(0);
+    } else {
+      console.log('Usage:');
+      console.log('  mini-cc config set <KEY>=<VALUE>   Set a configuration value');
+      console.log('  mini-cc config get <KEY>           Get a configuration value');
+      process.exit(1);
+    }
+  }
+  
   if (cmd === '/buddy') {
     const buddyModule = require('./buddy/companion');
     const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');

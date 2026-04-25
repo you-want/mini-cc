@@ -30,6 +30,9 @@ import { LLMProvider } from './services/providers';
 import { createAnthropicProvider } from './services/providers/AnthropicProvider';
 // 引入 OpenAIProvider 模块，用于创建 OpenAI 服务商实例
 import { createOpenAIProvider } from './services/providers/OpenAIProvider';
+// 引入 ConfigManager
+import { readConfig, writeConfig } from './utils/configManager';
+import inquirer from 'inquirer';
 // 引入 spawnBuddy 模块，用于创建伙伴系统实例
 import { spawnBuddy } from './buddy/companion';
 // 引入 globalHooks 模块，用于触发生命周期钩子触发
@@ -67,32 +70,92 @@ export async function startApp(prefetchConfig: any) {
   dotenv.config();
 
   // 获取选择的大模型提供商（默认为 openai）
-  const PROVIDER = (process.env.PROVIDER || 'openai').toLowerCase();
+  const config = readConfig();
+  const envProvider = (process.env.PROVIDER || config.PROVIDER || 'openai').toLowerCase();
+  
+  // 交互式配置逻辑：如果环境中没有对应的 Key，则弹出问答
+  let PROVIDER = envProvider;
+  let apiKey = '';
+  let baseURL: string | undefined;
+  let modelName = '';
+
+  if (PROVIDER === 'openai') {
+    apiKey = process.env.OPENAI_API_KEY || config.OPENAI_API_KEY || '';
+    baseURL = process.env.OPENAI_BASE_URL || config.OPENAI_BASE_URL;
+    modelName = process.env.MODEL_NAME || config.MODEL_NAME || 'qwen3.6-plus';
+    
+    if (!apiKey) {
+      console.log(chalk.yellow('⚠️ 未检测到 OpenAI 兼容接口的 API Key。'));
+      const answers = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'key',
+          message: '欢迎使用！请粘贴您的 OPENAI_API_KEY:',
+          mask: '*'
+        },
+        {
+          type: 'input',
+          name: 'model',
+          message: '请输入您想使用的模型名称 (默认: qwen3.6-plus):',
+          default: 'qwen3.6-plus'
+        },
+        {
+          type: 'input',
+          name: 'base_url',
+          message: '如果您使用的是兼容接口 (如 DeepSeek/Qwen)，请输入 BASE_URL (可选):',
+        }
+      ]);
+      apiKey = answers.key;
+      modelName = answers.model;
+      baseURL = answers.base_url || undefined;
+      
+      // 保存到全局配置
+      config.PROVIDER = 'openai';
+      config.OPENAI_API_KEY = apiKey;
+      config.MODEL_NAME = modelName;
+      if (baseURL) config.OPENAI_BASE_URL = baseURL;
+      writeConfig(config);
+      console.log(chalk.green('✓ 配置已保存至全局目录 (~/.mini-cc/config.json)'));
+    }
+  } else {
+    apiKey = process.env.ANTHROPIC_API_KEY || config.ANTHROPIC_API_KEY || '';
+    modelName = process.env.MODEL_NAME || config.MODEL_NAME || 'claude-3-7-sonnet-20250219';
+
+    if (!apiKey) {
+      console.log(chalk.yellow('⚠️ 未检测到 Anthropic 的 API Key。'));
+      const answers = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'key',
+          message: '欢迎使用！请粘贴您的 ANTHROPIC_API_KEY:',
+          mask: '*'
+        },
+        {
+          type: 'input',
+          name: 'model',
+          message: '请输入您想使用的模型名称 (默认: claude-3-7-sonnet-20250219):',
+          default: 'claude-3-7-sonnet-20250219'
+        }
+      ]);
+      apiKey = answers.key;
+      modelName = answers.model;
+      
+      // 保存到全局配置
+      config.PROVIDER = 'anthropic';
+      config.ANTHROPIC_API_KEY = apiKey;
+      config.MODEL_NAME = modelName;
+      writeConfig(config);
+      console.log(chalk.green('✓ 配置已保存至全局目录 (~/.mini-cc/config.json)'));
+    }
+  }
+
   let providerInstance: LLMProvider;
 
   // 根据配置初始化不同的大模型服务商
   if (PROVIDER === 'openai') {
-    const apiKey = process.env.OPENAI_API_KEY || '';
-    const baseURL = process.env.OPENAI_BASE_URL; // 可选的 Base URL，支持兼容接口如 Qwen, DeepSeek, Kimi 等
-    const modelName = process.env.MODEL_NAME || 'qwen3.6-plus'; // 默认使用 qwen3.6-plus 作为兼容模型示例
-
-    if (!apiKey) {
-      console.error(chalk.red('错误：未设置 OPENAI_API_KEY 环境变量。'));
-      console.error(chalk.yellow('请在 .env 文件中设置 PROVIDER=openai 并配置 OPENAI_API_KEY'));
-      process.exit(1);
-    }
     console.log(chalk.gray(`[系统配置] 已选择 OpenAI 兼容模型，模型名称: ${modelName}`));
     providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
   } else {
-    // 默认使用 Anthropic (Claude)
-    const apiKey = process.env.ANTHROPIC_API_KEY || '';
-    const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
-
-    if (!apiKey) {
-      console.error(chalk.red('错误：未设置 ANTHROPIC_API_KEY 环境变量。'));
-      console.error(chalk.yellow('请在 .env 文件中设置 PROVIDER=anthropic 并配置 ANTHROPIC_API_KEY'));
-      process.exit(1);
-    }
     console.log(chalk.gray(`[系统配置] 已选择 Anthropic 模型，模型名称: ${modelName}`));
     providerInstance = createAnthropicProvider(apiKey, modelName);
   }
@@ -158,14 +221,15 @@ export async function startApp(prefetchConfig: any) {
 
   // 处理清空对话命令逻辑
   const handleClear = () => {
+    const currentConfig = readConfig();
     if (PROVIDER === 'openai') {
-      const apiKey = process.env.OPENAI_API_KEY || '';
-      const baseURL = process.env.OPENAI_BASE_URL;
-      const modelName = process.env.MODEL_NAME || 'qwen3.6-plus';
+      const apiKey = process.env.OPENAI_API_KEY || currentConfig.OPENAI_API_KEY || '';
+      const baseURL = process.env.OPENAI_BASE_URL || currentConfig.OPENAI_BASE_URL;
+      const modelName = process.env.MODEL_NAME || currentConfig.MODEL_NAME || 'qwen3.6-plus';
       providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
     } else {
-      const apiKey = process.env.ANTHROPIC_API_KEY || '';
-      const modelName = process.env.MODEL_NAME || 'claude-3-7-sonnet-20250219';
+      const apiKey = process.env.ANTHROPIC_API_KEY || currentConfig.ANTHROPIC_API_KEY || '';
+      const modelName = process.env.MODEL_NAME || currentConfig.MODEL_NAME || 'claude-3-7-sonnet-20250219';
       providerInstance = createAnthropicProvider(apiKey, modelName);
     }
     const newAgent = createAgent(providerInstance);
