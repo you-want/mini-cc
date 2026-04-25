@@ -24,6 +24,8 @@ import { profileCheckpoint } from './utils/startupProfiler';
 
 profileCheckpoint('cli_tsx_entry');
 
+import { EasterEggInterceptor } from './commands/EasterEggInterceptor';
+
 // 获取命令行参数
 const args = process.argv.slice(2);
 
@@ -41,12 +43,18 @@ if (args.length > 0) {
     process.exit(0);
   }
   if (cmd === '--help' || cmd === '-h') {
-    console.log('Usage: mini-cc [options]');
-    console.log('Options:');
-    console.log('  -v, --version  Show version');
-    console.log('  -h, --help     Show help');
-    console.log('  --health       Health check');
-    console.log('  --profile      Dump startup performance profile');
+    console.log(`
+  mini-cc (Mini Claude Code)
+  Usage:
+    mini-cc                 Start interactive mode
+    mini-cc <query>         Execute a single query and exit
+    mini-cc --version, -v   Show version
+    mini-cc --help, -h      Show help
+    mini-cc config set <K>=<V> Set a global configuration
+    mini-cc config get <K>  Get a global configuration
+    mini-cc /buddy          Launch buddy easter egg
+    mini-cc /voice          Launch voice mode easter egg
+      `);
     process.exit(0);
   }
   if (cmd === '--health') {
@@ -91,24 +99,9 @@ if (args.length > 0) {
     }
   }
   
-  if (cmd === '/buddy') {
-    const buddyModule = require('./buddy/companion');
-    const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');
-    const bones = buddyModule.generateBones(seed);
-    
-    const speciesName = bones.species === 'duck' ? '🦆 小黄鸭 (Duck)' : '🐙 小章鱼 (Octopus)';
-    const shinyText = bones.shiny ? '✨ 是 (Shiny!)' : '否';
-    const statsText = Object.entries(bones.stats).map(([k, v]) => `${k}: ${v}`).join(' | ');
-    
-    console.log(`🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}`);
+  // Fast-path: 彩蛋拦截器
+  if (EasterEggInterceptor.intercept(args)) {
     process.exit(0);
-  }
-  if (cmd === '/voice') {
-    const { triggerVoiceMode } = require('./commands/voice');
-    triggerVoiceMode().then((msg: string) => {
-      console.log(msg);
-      process.exit(0);
-    });
   }
 }
 
