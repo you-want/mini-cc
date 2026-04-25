@@ -1,65 +1,38 @@
-# 🐍 mini-cc (Python Edition)
+# mini-cc (Python 版本)
 
-这是 `mini-cc` 智能体的 **Python 语言实现版本**。
+这是一个用 Python 语言复刻的 `mini-cc` 轻量级 AI 编程智能体项目，专注于用最清晰的代码向 Python 开发者展示 Agent 的事件循环、Tool Use 以及沙盒安全。
 
-本项目旨在通过 Python 极简的脚本生态与 `asyncio` 异步特性，复刻 TypeScript 版本的全套 Agent 能力。
+## 🎯 当前状态 (开发中)
+目前刚刚完成了项目初始化，搭建了：
+- **配置文件管理**: 支持 `.env` 和 `~/.mini-cc/config.json`，并提供和 TS 版一致的 `config set` 命令行。
+- **终端交互基础**: 基于 `rich` 和 `prompt_toolkit` 构建了漂亮的控制台输出。
+- **异步主循环骨架**: 使用 `asyncio` 作为事件循环的核心底座，为后续并发调用大模型和工具做好准备。
 
-本项目同样遵循**纯函数式设计**与**无状态闭包**的理念，将大模型（LLM）、工具系统（Tool Use）和 Agent 事件循环高度解耦。
+## 🚀 如何运行
 
-## ✨ 已实现功能
+1. **创建虚拟环境并安装依赖**
+   ```bash
+   cd python
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-1. **OpenAI 兼容接口支持**：支持所有兼容 OpenAI 格式的模型（默认针对 Qwen 系列模型进行优化，支持提取并展示 `reasoning_content` 思维链）。
-2. **极速流式输出**：通过 `AsyncOpenAI` 客户端实现异步流式文本渲染，无需等待模型全部生成完毕。
-3. **完整工具链 (Tool Use)**：
-   - `BashTool`：赋予大模型在本地执行终端命令的能力。
-   - `FileReadTool`：支持读取并智能截断超长本地文件。
-   - `FileWriteTool`：全自动补全缺失目录并写入文件。
-4. **Agent 智能循环**：多轮连续调用工具直至完成用户设定的目标。
+2. **启动应用**
+   ```bash
+   python main.py
+   ```
 
-## 🚀 使用步骤
+   首次启动会自动引导你配置 API Key，你也可以手动配置：
+   ```bash
+   python main.py config set OPENAI_API_KEY sk-xxx
+   ```
 
-### 1. 环境准备
+## 🛠 学习指南 (给 Python 学习者的注释)
 
-确保你的系统已安装 **Python 3.8+**。
-
-### 2. 安装依赖
-
-进入项目目录，建议使用虚拟环境，并安装所需的 Python 依赖包：
-
-```bash
-cd mini-cc/python
-
-python3 --version && pip3 --version
-
-# 推荐：创建并激活虚拟环境 (可选)
-python3 -m venv venv
-source venv/bin/activate
-
-# 安装依赖
-pip3 install -r requirements.txt
-```
-
-### 3. 配置环境变量
-
-在 `mini-cc/python` 目录下创建一个 `.env` 文件，并填入以下内容：
-
-```env
-# 必填：你的大模型 API Key
-OPENAI_API_KEY="sk-xxxxxx"
-
-# 选填：大模型接口的 Base URL（如果不填，默认为 OpenAI 官方地址）
-OPENAI_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
-
-# 选填：你想使用的模型名称（默认为 qwen3.6-plus，如果使用其他模型请对应修改）
-MODEL_NAME="qwen-max"
-```
-
-### 4. 启动 Agent
-
-运行入口文件启动你的专属 AI 助手：
-
-```bash
-python3 src/main.py
-```
-
-启动后，在终端中会出现 `mini-cc>` 提示符，你就可以直接输入自然语言（例如：“帮我在上一级目录创建一个 index.html，写一个贪吃蛇游戏”）让它为你工作了！
+我们在源码中留下了大量的中文注释，解释了 **“为什么要这么写”**。
+例如：
+- `pathlib` 为什么比 `os.path` 好？
+- `asyncio` 的作用是什么？
+- `rich` 怎么进行控制台渲染？
+- 怎么编写干净的 CLI (使用 `argparse`)？

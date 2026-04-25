@@ -1,4 +1,7 @@
-openai
-anthropic
-python-dotenv
-colorama
+# Core dependencies
+rich>=13.0.0          # 用于漂亮的终端输出 (替代 TS 版的 Ink/React)
+python-dotenv>=1.0.0  # 用于加载 .env 环境变量文件
+openai>=1.0.0         # 用于调用 OpenAI 及兼容接口的大模型
+anthropic>=0.30.0     # 用于调用官方 Claude 模型
+pydantic>=2.0.0       # 用于做数据验证和 Tool 描述解析 (类似于 TS 中的 Zod/类型推断)
+prompt_toolkit>=3.0.0 # 用于处理交互式输入 (支持多行输入和历史记录)
