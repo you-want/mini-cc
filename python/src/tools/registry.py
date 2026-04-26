@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional
 from .base import BaseTool
 from .bash import BashTool
+from .file_read import FileReadTool
+from .file_write import FileWriteTool
 
 class ToolRegistry:
     """
@@ -11,6 +13,8 @@ class ToolRegistry:
         self._tools: Dict[str, BaseTool] = {}
         # 初始化时默认注册一些基础工具
         self.register(BashTool())
+        self.register(FileReadTool())
+        self.register(FileWriteTool())
         
     def register(self, tool: BaseTool):
         """将工具加入字典"""
