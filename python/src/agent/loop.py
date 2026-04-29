@@ -4,6 +4,7 @@ from prompt_toolkit import PromptSession
 from src.utils.console import console, print_welcome
 from src.agent.llm import LLMClient
 from src.tools.registry import registry
+from src.agent.memory import MemoryManager
 
 async def main_loop():
     """
@@ -18,6 +19,9 @@ async def main_loop():
     print_welcome()
     session = PromptSession()
     
+    # 实例化记忆管理器
+    memory_manager = MemoryManager()
+    
     try:
         llm = LLMClient()
     except Exception as e:
@@ -27,8 +31,15 @@ async def main_loop():
 
     # 全局变量：保存你和大模型的所有对话历史
     # 最开始我们要给 AI 设定一个人设 (System Prompt)
+    # 并将之前保存的 .ai_memory 注入进去！
+    global_memory = memory_manager.get_global_memory()
+    system_prompt = "你是一个强大的 AI 编程助手，类似于 Claude Code。你可以使用提供的工具（比如 BashTool）来执行系统命令。你的思考和分析请用清晰的中文输出。如果需要执行任务，请直接调用工具，不要只是告诉我命令。\n\n"
+    
+    if global_memory:
+        system_prompt += f"=== 项目全局记忆 ===\n{global_memory}\n====================\n\n"
+        
     messages = [
-        {"role": "system", "content": "你是一个强大的 AI 编程助手，类似于 Claude Code。你可以使用提供的工具（比如 BashTool）来执行系统命令。你的思考和分析请用清晰的中文输出。如果需要执行任务，请直接调用工具，不要只是告诉我命令。"}
+        {"role": "system", "content": system_prompt}
     ]
     
     while True:

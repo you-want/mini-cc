@@ -5,3 +5,5 @@ openai>=1.0.0         # 用于调用 OpenAI 及兼容接口的大模型
 anthropic>=0.30.0     # 用于调用官方 Claude 模型
 pydantic>=2.0.0       # 用于做数据验证和 Tool 描述解析 (类似于 TS 中的 Zod/类型推断)
 prompt_toolkit>=3.0.0 # 用于处理交互式输入 (支持多行输入和历史记录)
+aiofiles>=23.0.0      # 用于异步文件读写
+pytest>=7.0.0         # 单元测试框架

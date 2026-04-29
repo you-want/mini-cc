@@ -2,6 +2,11 @@ import asyncio
 from pydantic import BaseModel, Field
 from .base import BaseTool
 
+# 引入我们刚才写的安全校验模块
+from .security.bash_security import check_bash_security
+from .security.destructive_warning import is_destructive_command
+from .security.should_sandbox import should_use_sandbox
+
 class BashArgs(BaseModel):
     # Field 用于描述参数，这个描述会被提取到 JSON Schema 中，直接喂给大模型
     # ... 代表这个参数是必填的
@@ -21,6 +26,25 @@ class BashTool(BaseTool):
         用异步 (async/await) 可以避免卡住主线程的 UI。
         """
         try:
+            # ----------------- 安全拦截阶段 (Phase 1) -----------------
+            
+            # 1. 拦截命令替换漏洞
+            if check_bash_security(command):
+                return "错误：命令被安全拦截。检测到高危命令替换 $(...) 或 `...`，请避免使用此类语法构造复杂命令。"
+                
+            # 2. 拦截毁灭性指令
+            if is_destructive_command(command):
+                return "严重警告：您的命令被系统强行终止！这似乎是一个极其危险的命令（如 rm -rf / 或 fork 炸弹），大模型不允许执行破坏性操作。"
+                
+            # 3. 决定是否丢入沙盒
+            in_sandbox = should_use_sandbox(command)
+            
+            # 如果判定需要沙盒执行，我们给终端打印一个提示（在真实环境中，这里应该调用 Docker API，但在这里我们做一层 Mock 展示隔离效果）
+            if in_sandbox:
+                print(f"\n[安全沙盒] 命令 '{command}' 不在宿主机白名单中，已被放入隔离容器中执行（模拟）...")
+                
+            # ----------------- 实际执行阶段 (Phase 2) -----------------
+            
             # 启动子进程
             process = await asyncio.create_subprocess_shell(
                 command,
@@ -36,6 +60,9 @@ class BashTool(BaseTool):
             err_str = stderr.decode('utf-8').strip()
             
             result = ""
+            if in_sandbox:
+                result += "【沙盒环境执行结果】:\n"
+                
             if out_str:
                 result += f"【标准输出】:\n{out_str}\n"
             if err_str:

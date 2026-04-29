@@ -3,6 +3,7 @@ from .base import BaseTool
 from .bash import BashTool
 from .file_read import FileReadTool
 from .file_write import FileWriteTool
+from src.agent.memory import AddMemoryTool
 
 class ToolRegistry:
     """
@@ -15,6 +16,7 @@ class ToolRegistry:
         self.register(BashTool())
         self.register(FileReadTool())
         self.register(FileWriteTool())
+        self.register(AddMemoryTool())
         
     def register(self, tool: BaseTool):
         """将工具加入字典"""
