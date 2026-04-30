@@ -75,23 +75,22 @@ async def main_loop():
             # 一个任务可能需要 AI 多次调用工具才能完成（比如：看报错 -> 改代码 -> 再看报错 -> 解决），
             # 所以这里必须有一个死循环（while True），直到 AI 不再想调用工具为止。
             while True:
-                # 给终端一点提示，不然等待太久用户以为卡死了
-                console.print("[dim cyan]AI 思考中...[/dim cyan]", end="\r")
+                # 注释掉之前的占位提示，因为现在是流式输出了，AI 会马上开始打字
+                # console.print("[dim cyan]AI 思考中...[/dim cyan]", end="\r")
                 
                 # 发请求给 OpenAI 接口
                 response = await llm.chat(messages)
                 
                 # 收到回复了，把刚才的“思考中”提示抹掉
-                print(" " * 20, end="\r") 
+                # print(" " * 20, end="\r") 
                 
                 # 第二步：记录 AI 的回复到上下文中
                 # 我们需要构造一个属于 "assistant" 角色的消息
                 ai_msg = {"role": "assistant"}
                 
-                # 如果 AI 说了什么文本，我们就把它打印出来，并存下来
+                # 如果 AI 说了什么文本，我们就把它存下来（打印已经在 llm.py 流式处理中完成了）
                 if response["content"]:
                     ai_msg["content"] = response["content"]
-                    console.print(f"\n[ai]🤖 AI:[/ai] {response['content']}")
                     
                 # 如果 AI 刚才触发了工具调用，我们也要按原样把调用信息存回上下文！
                 # 这是 OpenAI 接口的死规定：如果你用了工具，那必须在上下文中体现出来，否则会报错。
@@ -122,14 +121,16 @@ async def main_loop():
                     tool_name = tc["name"]
                     tool_args = tc["arguments"] # 这已经是一个 Python 字典了，比如 {"command": "ls"}
                     
-                    console.print(f"[warning]🔧 工具调用: {tool_name}[/warning] 参数: {tool_args}")
+                    from rich.markup import escape
+                    tool_args_str = str(tool_args)
+                    console.print(f"[warning]🔧 工具调用: {tool_name}[/warning] 参数: {escape(tool_args_str)}")
                     
                     # 动态派发执行！
                     tool_result = await registry.execute_tool(tool_name, tool_args)
                     
                     # 终端打印一下执行结果给用户看（截断一点，免得刷屏）
                     preview_res = tool_result[:150].replace("\n", " ") + ("..." if len(tool_result) > 150 else "")
-                    console.print(f"[info]  工具返回: {preview_res}[/info]")
+                    console.print(f"[info]  工具返回: {escape(preview_res)}[/info]")
                     
                     # 第五步：把工具跑出来的结果，作为一个专门的 "tool" 角色发回给上下文！
                     # 这样 AI 在下一个 while 循环里就能“看”到工具执行成功还是失败了。
