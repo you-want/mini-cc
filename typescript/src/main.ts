@@ -153,10 +153,10 @@ export async function startApp(prefetchConfig: any) {
 
   // 根据配置初始化不同的大模型服务商
   if (PROVIDER === 'openai') {
-    console.log(chalk.gray(`[系统配置] 已选择 OpenAI 兼容模型，模型名称: ${modelName}`));
+    // 移除硬编码的 console.log，交给 WelcomeBanner 处理
     providerInstance = createOpenAIProvider(apiKey, baseURL, modelName);
   } else {
-    console.log(chalk.gray(`[系统配置] 已选择 Anthropic 模型，模型名称: ${modelName}`));
+    // 移除硬编码的 console.log，交给 WelcomeBanner 处理
     providerInstance = createAnthropicProvider(apiKey, modelName);
   }
 

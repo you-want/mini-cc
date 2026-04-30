@@ -11,6 +11,10 @@ export function WelcomeBanner() {
   const homedir = os.homedir();
   const displayCwd = cwd.startsWith(homedir) ? `~${cwd.slice(homedir.length)}` : cwd;
   
+  // 获取 Provider 以便展示
+  const provider = configManager.getConfigValue('PROVIDER') || process.env.PROVIDER || 'openai';
+  const providerDisplay = provider === 'openai' ? 'OpenAI / Compatible' : 'Anthropic';
+  
   // 简单获取版本号
   let version = '1.0.0';
   try {
@@ -21,34 +25,31 @@ export function WelcomeBanner() {
   }
 
   return (
-    <Box borderStyle="round" borderColor="gray" paddingX={2} paddingY={1} width="100%" flexDirection="row">
+    <Box borderStyle="round" borderColor="#CCFF00" paddingX={2} paddingY={1} width="100%" flexDirection="row">
       {/* 左侧区域 */}
       <Box width="50%" flexDirection="column">
-        <Text color="cyan" bold>mini-cc CLI {version} (Mini Claude Code)</Text>
+        <Text color="cyan" bold>mini-cc CLI {version}</Text>
         
-        {/* Logo 区：根据 logo.svg 设计，使用 ANSI 块字符和前景色/背景色组合出高还原度的图案 */}
-        {/* logo 是一个带荧光绿边框的黑底方块，里面有 "cc" 和两个小方块 */}
-        <Box marginTop={1} marginBottom={1} flexDirection="column">
-          <Text color="greenBright">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</Text>
-          <Text color="greenBright">█<Text backgroundColor="black" color="greenBright">                   </Text>█</Text>
-          <Text color="greenBright">█<Text backgroundColor="black" color="greenBright">  <Text color="white">◆ ◆</Text>            </Text>█</Text>
-          <Text color="greenBright">█<Text backgroundColor="black" color="greenBright" bold>  cc               </Text>█</Text>
-          <Text color="greenBright">█<Text backgroundColor="black" color="greenBright">               <Text color="white">■</Text>   </Text>█</Text>
-          <Text color="greenBright">█<Text backgroundColor="black" color="greenBright">                   </Text>█</Text>
-          <Text color="greenBright">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</Text>
+        <Box marginTop={0} marginBottom={0} flexDirection="column">
+          <Text color="#CCFF00">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</Text>
+          <Text color="#CCFF00">█<Text backgroundColor="#050505" color="#CCFF00">               </Text>█</Text>
+          <Text color="#CCFF00">█<Text backgroundColor="#050505">  <Text color="#CCFF00" bold>cc</Text>       <Text color="#E5E5E5">■</Text>   </Text>█</Text>
+          <Text color="#CCFF00">█<Text backgroundColor="#050505" color="#CCFF00">               </Text>█</Text>
+          <Text color="#CCFF00">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</Text>
         </Box>
         
         <Text>Welcome back, <Text color="cyan">{userName}</Text></Text>
-        <Text>Model: {modelName}</Text>
+        <Text>Model: <Text  color="cyan">{modelName}</Text></Text>
+        <Text>Provider: <Text  color="cyan">{providerDisplay}</Text></Text>
         <Text color="gray">{displayCwd}</Text>
       </Box>
 
       {/* 右侧区域 */}
       <Box width="50%" flexDirection="column" paddingLeft={3}>
         <Text color="cyan" bold>Announcements</Text>
-        <Text>Try Codebase Copilot</Text>
-        <Text>Website: https://mini-cc.raingpt.top/</Text>
-        <Text>Github: https://github.com/you-want/mini-cc</Text>
+        <Text>Try MINI-CC</Text>
+        <Text>Website: <Text color="blue" underline>https://mini-cc.raingpt.top/</Text></Text>
+        <Text>Github: <Text color="blue" underline>https://github.com/you-want/mini-cc</Text></Text>
         
         <Box marginTop={1} marginBottom={1}>
           <Text color="gray">──────────────────────────────────</Text>
