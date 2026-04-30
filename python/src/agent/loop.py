@@ -146,8 +146,9 @@ async def main_loop():
                 
         # 捕获 Ctrl+C (KeyboardInterrupt) 和 Ctrl+D (EOFError)
         except KeyboardInterrupt:
-            console.print("\n[info]操作被中断。输入 /exit 退出。[/info]")
-            continue
+            # 当用户按下 Ctrl+C 时，直接退出程序，这符合绝大多数 CLI 工具的习惯
+            console.print("\n[info]再见！[/info]")
+            break
         except EOFError:
             console.print("\n[info]再见！[/info]")
             break
