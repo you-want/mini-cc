@@ -18,7 +18,13 @@ class FileWriteTool(BaseTool):
         使用 aiofiles 异步写入文件内容。
         在实际 Agent 开发中，这一步往往非常重要，它是 AI “编写代码” 的手脚。
         """
+        # 获取当前工作目录，并强制重定向到 ../test_file (相对于 python/ 目录)
+        workspace_dir = (Path.cwd() / ".." / "test_file").resolve()
         path = Path(file_path)
+        
+        # 如果大模型给出的是相对路径，我们把它拼接到当前工作目录下
+        if not path.is_absolute():
+            path = workspace_dir / path
         
         try:
             # 1. 安全检查与自动创建父目录

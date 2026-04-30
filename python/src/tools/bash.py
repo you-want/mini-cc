@@ -45,9 +45,14 @@ class BashTool(BaseTool):
                 
             # ----------------- 实际执行阶段 (Phase 2) -----------------
             
+            # 强制指定在 ../test_file 目录下执行命令
+            workspace_dir = (Path.cwd() / ".." / "test_file").resolve()
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+            
             # 启动子进程
             process = await asyncio.create_subprocess_shell(
                 command,
+                cwd=str(workspace_dir),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )

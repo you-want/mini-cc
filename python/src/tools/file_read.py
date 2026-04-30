@@ -21,7 +21,13 @@ class FileReadTool(BaseTool):
         使用 aiofiles 异步读取文件内容。
         这在 Python 中是处理文件 I/O 不阻塞主线程的最佳实践。
         """
+        # 获取当前工作目录，并强制重定向到 ../test_file (相对于 python/ 目录)
+        workspace_dir = (Path.cwd() / ".." / "test_file").resolve()
         path = Path(file_path)
+        
+        # 如果大模型给出的是相对路径，我们把它拼接到当前工作目录下
+        if not path.is_absolute():
+            path = workspace_dir / path
         
         # 1. 安全检查：文件是否存在
         if not path.exists():
