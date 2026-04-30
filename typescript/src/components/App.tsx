@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { useInput } from 'ink';
+import { useInput, Static } from 'ink';
 import { Box } from '../ink/components/Box';
 import { Text } from '../ink/components/Text';
 import TextInputModule from 'ink-text-input';
 import { VirtualMessageList } from './VirtualMessageList';
+import { WelcomeBanner } from './WelcomeBanner';
 
 
 // 兼容 Bun 打包后的 CommonJS 导出格式
@@ -17,11 +18,9 @@ interface AppProps {
 }
 
 export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
-  const [messages, setMessages] = useState<Array<{ id: string; content: string }>>([
-    { id: 'welcome1', content: '=== 欢迎使用 mini-cc (React UI 模式) ===' },
-    { id: 'welcome2', content: '输入您的需求，我将为您编写代码或执行系统操作。' },
-    { id: 'welcome3', content: '键入 "exit" 或 "quit" 退出程序。键入 "/clear" 清空历史。' },
-  ]);
+  // 我们将默认的欢迎语移除，因为现在有了炫酷的顶部 WelcomeBanner
+  const [messages, setMessages] = useState<Array<{ id: string; content: string }>>([]);
+  const [welcome] = useState([{ id: 'welcome-banner' }]);
   const [input, setInput] = useState(initialInput);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -167,24 +166,30 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
 
   return (
     <Box flexDirection="column" width="100%">
+      {/* 静态 Welcome Banner，只会打印一次并自然滚出屏幕 */}
+      <Static items={welcome}>
+        {(item) => <WelcomeBanner key={item.id} />}
+      </Static>
+
       {/* 虚拟滚动的消息列表区 */}
       <Box flexDirection="column" width="100%">
         <VirtualMessageList messages={messages} columns={80} />
       </Box>
 
-      {/* 底部交互区 */}
-      <Box flexDirection="row" marginTop={1}>
-        <Box marginRight={1}>
-          <Text color="cyan">mini-cc{'>'}</Text>
-        </Box>
-        {isLoading ? (
-          <Text color="yellow">正在思考...</Text>
-        ) : isVoiceMode ? (
-          <Text color={isRecording ? "red" : "gray"}>
-            {isRecording ? `录音中 (释放结束)${recordingDots}` : "按住 Space 开始说话 (按 Esc 或 Enter 取消)..."}
-          </Text>
-        ) : (
-          <TextInput
+      {/* 底部交互区：框线包裹的输入框和操作提示 */}
+      <Box flexDirection="column" marginTop={1}>
+        <Box borderStyle="round" borderColor="dim" paddingX={1} width="100%">
+          <Box marginRight={1}>
+            <Text color="cyan">{'>'}</Text>
+          </Box>
+          {isLoading ? (
+            <Text color="yellow">正在思考...</Text>
+          ) : isVoiceMode ? (
+            <Text color={isRecording ? "red" : "gray"}>
+              {isRecording ? `录音中 (释放结束)${recordingDots}` : "按住 Space 开始说话 (按 Esc 或 Enter 取消)..."}
+            </Text>
+          ) : (
+            <TextInput
               value={input}
               onChange={(newVal: string) => {
                 // 处于语音模式时，阻止文本框的任何更新
@@ -193,9 +198,15 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
                 }
               }}
               onSubmit={handleSubmit}
-              placeholder="Type your message..."
+              placeholder="Ask anything..."
             />
-        )}
+          )}
+        </Box>
+        
+        {/* 底部提示文字 */}
+        <Box paddingX={1} marginTop={0}>
+          <Text color="dim">$/! shell mode • / command mode • ↵ or Ctrl+J new line</Text>
+        </Box>
       </Box>
     </Box>
   );

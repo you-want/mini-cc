@@ -42,7 +42,10 @@
     "ink-text-input": "4.0.3",
     "inquirer": "^8.2.6",
     "openai": "^6.34.0",
-    "react": "^17.0.2"
+    "react": "^17.0.2",
+    "sharp": "^0.34.5",
+    "term-img": "^7.1.0",
+    "terminal-image": "^4.3.0"
   },
   "devDependencies": {
     "@types/inquirer": "^8.2.10",
