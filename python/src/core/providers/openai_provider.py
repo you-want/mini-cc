@@ -28,14 +28,21 @@ class OpenAIProvider(LLMProvider):
         """
         将本地的工具列表转换成 OpenAI 接口所要求的格式
         """
-        return [{
-            "type": "function",
-            "function": {
-                "name": t["name"],
-                "description": t["description"],
-                "parameters": t["inputSchema"]
-            }
-        } for t in tools]
+        result = []
+        for t in tools:
+            # 兼容老式的字典格式和新式继承自 BaseTool 的类实例格式
+            if isinstance(t, dict):
+                result.append({
+                    "type": "function",
+                    "function": {
+                        "name": t["name"],
+                        "description": t["description"],
+                        "parameters": t["inputSchema"]
+                    }
+                })
+            else:
+                result.append(t.to_openai_schema())
+        return result
 
     def fix_json_string(self, raw: str) -> str:
         """

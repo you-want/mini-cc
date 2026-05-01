@@ -13,6 +13,7 @@ import sys
 import asyncio
 from dotenv import load_dotenv
 import colorama
+import readline
 
 # 确保 src 目录可以被正确引用 (解决模块导入路径问题)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -88,7 +89,7 @@ async def main():
                 continue
                 
             # 处理退出命令
-            if user_input.lower() in ['exit', 'quit']:
+            if user_input.lower() in ['exit', 'quit', '/exit']:
                 print('\033[32m再见！\033[0m')
                 break
                 
@@ -131,11 +132,21 @@ async def main():
                 sys.stdout.flush()
 
             # 将用户输入交给 Agent 处理
-            await agent.chat(user_input, on_text_response)
-            print()
-            
+            try:
+                await agent.chat(user_input, on_text_response)
+                print()
+            except KeyboardInterrupt:
+                # 在大模型生成或工具执行期间捕获 Ctrl+C，只打断当前任务，不退出整个程序
+                print('\033[33m\n[打断] 当前操作已被用户终止 (Ctrl+C)。\033[0m')
+            except Exception as e:
+                print(f'\033[31m\n[任务异常] {str(e)}\n\033[0m')
+                
         except KeyboardInterrupt:
-            # 捕获 Ctrl+C 中断
+            # 捕获在 input() 等待输入时的 Ctrl+C 中断，此时退出程序
+            print('\033[32m\n再见！\033[0m')
+            break
+        except asyncio.CancelledError:
+            # 捕获由于 Ctrl+C 导致的协程取消异常，直接退出
             print('\033[32m\n再见！\033[0m')
             break
         except EOFError:
@@ -148,4 +159,7 @@ async def main():
 
 if __name__ == '__main__':
     # 运行异步主函数
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        pass

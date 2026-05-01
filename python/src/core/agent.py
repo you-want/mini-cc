@@ -37,7 +37,13 @@ class Agent:
                 continue
                 
             # 2. 在已注册的工具列表中查找匹配的工具
-            tool = next((t for t in tools if t["name"] == call["name"]), None)
+            tool = None
+            for t in tools:
+                # 兼容字典格式和类实例格式
+                t_name = t.get("name") if isinstance(t, dict) else getattr(t, "name", None)
+                if t_name == call["name"]:
+                    tool = t
+                    break
             
             # 如果模型幻觉，调用了不存在的工具，同样返回错误信息让其重试
             if not tool:
@@ -54,7 +60,13 @@ class Agent:
             try:
                 print(f"\033[36m▶ [Agent] 正在调用工具: {call['name']} ...\033[0m")
                 # 异步执行工具的具体功能 (如读写文件、执行 Bash 等)
-                result = await tool["execute"](args)
+                # 注意：Python 的工具定义可能是一个字典 (例如 bash_tool) 或者是实现了 BaseTool 的类实例 (如 git_status_tool)
+                if isinstance(tool, dict) and "execute" in tool:
+                    result = await tool["execute"](args)
+                else:
+                    # 对于继承自 BaseTool 的类实例，通过 **args 解包调用
+                    result = await tool.execute(**args)
+                    
                 print(f"\033[32m✔ [Agent] 工具 {call['name']} 执行完毕。\033[0m")
                 
                 # 4. 上下文瘦身 (Context Microcompact)

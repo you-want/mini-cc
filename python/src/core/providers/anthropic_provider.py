@@ -27,11 +27,22 @@ class AnthropicProvider(LLMProvider):
         """
         将本地的工具列表转换成 Anthropic 接口所要求的格式
         """
-        return [{
-            "name": t["name"],
-            "description": t["description"],
-            "input_schema": t["inputSchema"]
-        } for t in tools]
+        result = []
+        for t in tools:
+            if isinstance(t, dict):
+                result.append({
+                    "name": t["name"],
+                    "description": t["description"],
+                    "input_schema": t["inputSchema"]
+                })
+            else:
+                schema = t.to_openai_schema()
+                result.append({
+                    "name": schema["function"]["name"],
+                    "description": schema["function"]["description"],
+                    "input_schema": schema["function"]["parameters"]
+                })
+        return result
         
     def fix_json_string(self, raw_str: str) -> str:
         """
