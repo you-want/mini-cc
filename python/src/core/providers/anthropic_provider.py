@@ -17,9 +17,11 @@ class AnthropicProvider(LLMProvider):
         # 初始化 Anthropic 异步客户端
         self.client = AsyncAnthropic(api_key=api_key)
         self.model = model
+        # 初始化消息历史，这其实就是大模型的记忆库 (Memory)
         self.messages = []
-        # Anthropic 的 System Prompt 不能混在 messages 数组里，而是要在请求时单独指定
-        self.system_prompt = "You are an intelligent assistant capable of executing system tools to help users solve problems."
+        
+        # 预设 Agent 的“人设”和基础行为规则
+        self.system_prompt = '你是一个名为 mini-cc 的高级 AI 编程助手。你拥有读取文件、写入文件和执行终端命令的权限。你的目标是帮助用户解决复杂的软件工程问题。在分析和操作时，请尽可能保持严谨，使用所提供的工具。\n\n【默认输出目录】\n如果用户要求你创建、生成、输出代码或文件，但没有明确指明输出目录，请务必默认将这些内容输出到相对于当前工作目录的上一级目录下的 `test_file` 文件夹中（即 `../test_file` 目录下）。注意：写入文件时如果目录不存在，FileWriteTool 会自动为你创建，请不要使用终端命令手动去 mkdir 创建目录。\n\n【防覆盖机制】\n当用户要求“新建”、“生成”某个文件，或者并未明确要求修改旧文件时，你在调用 FileWriteTool 时必须将 `require_new` 参数设置为 `true`。这能保护用户的旧代码不被意外覆盖。如果工具报错提示文件已存在，你应该重新选择一个不同的文件名（例如 `index2.html` 或根据上下文命名）再次尝试，或者向用户确认是否需要覆盖。'
         
     def get_tools(self) -> List[Dict[str, Any]]:
         """

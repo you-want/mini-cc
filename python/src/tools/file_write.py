@@ -7,13 +7,14 @@ from .base import BaseTool
 class FileWriteArgs(BaseModel):
     file_path: str = Field(..., description="要写入的文件的绝对或相对路径。")
     content: str = Field(..., description="要写入的完整文件内容。")
+    require_new: bool = Field(False, description="可选。如果为 true，当目标文件已存在时将拒绝写入并报错。用于确保不会意外覆盖用户的文件。")
 
 class FileWriteTool(BaseTool):
     name = "FileWriteTool"
-    description = "将文本内容完全覆盖写入到指定的本地文件中。大模型可以通过它来创建新文件、修改代码或更新配置。注意：这是覆盖写入，不是追加。"
+    description = "将文本内容完全覆盖写入到指定的本地文件中。大模型可以通过它来创建新文件、修改代码或更新配置。注意：如果旨在创建新文件，强烈建议将 require_new 设置为 true。"
     args_schema = FileWriteArgs
     
-    async def execute(self, file_path: str, content: str) -> str:
+    async def execute(self, file_path: str, content: str, require_new: bool = False) -> str:
         """
         使用 aiofiles 异步写入文件内容。
         在实际 Agent 开发中，这一步往往非常重要，它是 AI “编写代码” 的手脚。
@@ -26,6 +27,10 @@ class FileWriteTool(BaseTool):
         if not path.is_absolute():
             path = workspace_dir / path
         
+        # 防覆盖机制检查
+        if require_new and path.exists():
+            return f"写入失败：文件 '{file_path}' 已经存在！为了保护旧代码不被意外覆盖，本次写入已被拒绝。如果你想修改它，请将 require_new 设为 false。如果你想创建新文件，请更换文件名。"
+            
         try:
             # 1. 安全检查与自动创建父目录
             # 在写文件前，如果目标文件夹不存在，我们得先帮它建好 (相当于 mkdir -p)
