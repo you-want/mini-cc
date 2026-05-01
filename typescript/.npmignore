@@ -1,0 +1,29 @@
+# 忽略源代码目录（虽然 package.json 的 files 已白名单限制，双重保险）
+src/
+
+# 忽略 TypeScript 和测试配置
+tsconfig.json
+jest.config.js
+jest.setup.js
+
+# 忽略编译产物中的测试和模拟文件（不需要分发给最终用户）
+dist/__tests__/
+dist/**/*.test.js
+dist/architecture-mocks/
+dist/demo-ui.js
+
+# 忽略本地环境变量和日志
+.env
+.env.*
+*.log
+npm-debug.log*
+
+# 忽略包管理器锁文件（如果是作为依赖库安装，不需要锁文件）
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# 忽略其他不必要的本地配置
+.DS_Store
+.cursor/
+.vscode/

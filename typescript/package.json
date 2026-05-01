@@ -1,5 +1,5 @@
 {
-  "name": "mini-cc",
+  "name": "@you-want/mini-cc",
   "version": "1.0.0",
   "description": "A lightweight AI coding agent built with TypeScript, supporting multiple LLMs (Anthropic, Qwen, DeepSeek, etc.)",
   "main": "dist/cli.js",

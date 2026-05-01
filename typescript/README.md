@@ -19,51 +19,59 @@
 
 ## 📦 安装指南
 
-你可以通过 npm 全局安装，或者克隆源码并在本地构建。
+你可以通过 npm 全局安装，或者直接使用 npx 免安装运行。
 
-### 方法一：全局安装 (推荐)
+### 方法一：npx 免安装直接运行 (最简单)
+
+无需克隆代码，直接在你的任何项目目录下执行：
 
 ```bash
-npm install -g mini-cc
+npx @you-want/mini-cc
 ```
 
-### 方法二：源码构建 & Bun 二进制打包
-
-如果你希望自己修改代码，或者将其打包为一个无需 Node 环境即可运行的单一二进制文件：
+### 方法二：全局安装
 
 ```bash
-git clone https://github.com/your-username/mini-cc.git
-cd mini-cc/typescript
-npm install
-npm run build
+npm install -g @you-want/mini-cc
+```
+安装后，在任意终端输入 `mini-cc` 即可唤醒 AI 助手。
 
-# 运行
-npm start
-# 或者构建独立二进制可执行文件（需安装 Bun）
-bun build --compile src/main.ts --outfile mini-cc
+### 方法三：源码构建
+
+如果你希望自己修改代码：
+
+```bash
+git clone https://github.com/BiggerRain/mini-cc.git
+cd mini-cc/typescript
+pnpm install
+pnpm run build
+
+# 测试全局链接
+npm link
+mini-cc
 ```
 
 ## 🚀 快速开始
 
-初次运行 `mini-cc`，如果未检测到 API Key，程序会自动弹出交互式配置引导，帮助你一键设置并保存在 `~/.mini-cc/config.json` 中。
+初次运行 `mini-cc`，程序会自动引导你配置 API Key。我们默认支持 **OpenAI 格式的兼容接口**（例如通义千问、DeepSeek 等）。
 
 ```bash
 mini-cc
 ```
 
-**交互示例**：
+**配置向导示例**：
 ```text
-⚠️ 未检测到 OpenAI 兼容接口的 API Key。
 ? 欢迎使用！请粘贴您的 OPENAI_API_KEY: **********
-? 请输入您想使用的模型名称 (默认: qwen3.6-plus): qwen3.6-plus
+? 请输入您想使用的模型名称 (默认: qwen-max): qwen-max
 ? 如果您使用的是兼容接口，请输入 BASE_URL (可选): https://dashscope.aliyuncs.com/compatible-mode/v1
-✓ 配置已保存至全局目录 (~/.mini-cc/config.json)
+✓ 配置已保存
 ```
 
-你也可以通过命令行手动配置：
+你也可以随时通过命令行修改配置：
 ```bash
-mini-cc config set OPENAI_API_KEY sk-xxxxx
-mini-cc config set MODEL_NAME qwen-max
+mini-cc config set OPENAI_API_KEY=sk-xxxxx
+mini-cc config set BASE_URL=https://api.deepseek.com/v1
+mini-cc config set MODEL_NAME=deepseek-coder
 ```
 
 ## 🛠️ 架构图解
