@@ -1,9 +1,9 @@
 import pytest
 import os
 import asyncio
-from src.tools.bash import BashTool
-from src.tools.security.bash_security import check_bash_security
-from src.tools.security.destructive_warning import is_destructive_command
+from mini_cc.tools.bash import BashTool
+from mini_cc.tools.security.bash_security import check_bash_security
+from mini_cc.tools.security.destructive_warning import is_destructive_command
 
 @pytest.mark.asyncio
 async def test_bash_tool_safe():

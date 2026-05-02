@@ -1,5 +1,5 @@
 import pytest
-from src.agent.memory import MemoryManager
+from mini_cc.agent.memory import MemoryManager
 
 def test_memory_manager(tmp_path):
     # 使用 pytest 的 tmp_path 提供一个隔离的测试目录

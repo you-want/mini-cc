@@ -1,38 +1,50 @@
-# mini-cc (Python 版本)
+# mini-cc (Python Edition)
 
-这是一个用 Python 语言复刻的 `mini-cc` 轻量级 AI 编程智能体项目，专注于用最清晰的代码向 Python 开发者展示 Agent 的事件循环、Tool Use 以及沙盒安全。
+`you-want-mini-cc` is the Python port of the lightweight AI pair programming agent `@you-want/mini-cc`. 
+It provides a seamless, terminal-based pair programming experience powered by Large Language Models (LLMs) such as Claude 3.5 Sonnet and Qwen.
 
-## 🎯 当前状态 (开发中)
-目前刚刚完成了项目初始化，搭建了：
-- **配置文件管理**: 支持 `.env` 和 `~/.mini-cc/config.json`，并提供和 TS 版一致的 `config set` 命令行。
-- **终端交互基础**: 基于 `rich` 和 `prompt_toolkit` 构建了漂亮的控制台输出。
-- **异步主循环骨架**: 使用 `asyncio` 作为事件循环的核心底座，为后续并发调用大模型和工具做好准备。
+## Installation
 
-## 🚀 如何运行
+```bash
+pip install you-want-mini-cc
+```
 
-1. **创建虚拟环境并安装依赖**
-   ```bash
-   cd python
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+## Quick Start
 
-2. **启动应用**
-   ```bash
-   python main.py
-   ```
+Before running, you need to configure your LLM provider credentials. The agent supports both OpenAI-compatible APIs and Anthropic.
 
-   首次启动会自动引导你配置 API Key，你也可以手动配置：
-   ```bash
-   python main.py config set OPENAI_API_KEY sk-xxx
-   ```
+1. Create a `.env` file in your working directory (or set environment variables globally):
+```env
+# For OpenAI Compatible Models (e.g., Qwen, DeepSeek)
+PROVIDER=openai
+OPENAI_API_KEY=your_api_key_here
+OPENAI_BASE_URL=https://api.your-provider.com/v1
+MODEL_NAME=qwen3.6-plus
 
-## 🛠 学习指南 (给 Python 学习者的注释)
+# OR For Anthropic Models
+PROVIDER=anthropic
+ANTHROPIC_API_KEY=your_api_key_here
+MODEL_NAME=claude-3-7-sonnet-20250219
+```
 
-我们在源码中留下了大量的中文注释，解释了 **“为什么要这么写”**。
-例如：
-- `pathlib` 为什么比 `os.path` 好？
-- `asyncio` 的作用是什么？
-- `rich` 怎么进行控制台渲染？
-- 怎么编写干净的 CLI (使用 `argparse`)？
+2. Run the CLI in your terminal:
+```bash
+mini-cc
+```
+
+## Features
+- **Pure Python & Asyncio**: Fully asynchronous architecture for blazing-fast non-blocking I/O.
+- **Agentic Loop**: Built-in `BashTool`, `FileReadTool`, `FileWriteTool` for autonomous coding and execution.
+- **Security Sandbox**: Built-in bash execution wrapper stripper and destructive command interception.
+- **High-fidelity Terminal UI**: Supports dynamic ANSI-rendered banners and streaming responses.
+- **MCP Support**: Connects seamlessly with Model Context Protocol (MCP) plugins via `stdio`.
+
+## Usage
+Inside the `mini-cc>` prompt, simply ask the agent to perform tasks:
+> "Read the src/main.py file and add comments to the functions."
+> "Run tests and fix any failing ones."
+
+Use `/help` for more built-in commands.
+
+## License
+MIT License

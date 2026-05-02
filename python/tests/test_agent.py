@@ -2,8 +2,8 @@ import pytest
 import os
 import asyncio
 from typing import Callable, Any, Dict, List
-from src.core.agent import Agent
-from src.core.providers.base import LLMProvider
+from mini_cc.core.agent import Agent
+from mini_cc.core.providers.base import LLMProvider
 
 class MockProvider(LLMProvider):
     def __init__(self):

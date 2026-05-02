@@ -1,7 +1,7 @@
 import pytest
-from src.tools.security.bash_security import check_bash_security
-from src.tools.security.destructive_warning import is_destructive_command
-from src.tools.security.should_sandbox import strip_wrappers, should_use_sandbox
+from mini_cc.tools.security.bash_security import check_bash_security
+from mini_cc.tools.security.destructive_warning import is_destructive_command
+from mini_cc.tools.security.should_sandbox import strip_wrappers, should_use_sandbox
 
 def test_check_bash_security():
     # 安全的命令替换 (应该返回 False)

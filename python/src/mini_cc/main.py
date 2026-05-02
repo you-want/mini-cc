@@ -18,19 +18,28 @@ import readline
 # 确保 src 目录可以被正确引用 (解决模块导入路径问题)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.core.agent import Agent
-from src.core.providers.openai_provider import OpenAIProvider
-from src.core.providers.anthropic_provider import AnthropicProvider
-from src.buddy.companion import spawn_buddy
+from mini_cc.core.agent import Agent
+from mini_cc.core.providers.openai_provider import OpenAIProvider
+from mini_cc.core.providers.anthropic_provider import AnthropicProvider
+from mini_cc.buddy.companion import spawn_buddy
 
 async def main():
     # 初始化终端颜色输出 (Windows 兼容)
     colorama.init()
     
-    # 尝试加载当前目录下的 .env 文件
+    # 尝试加载环境变量 (优先级: 当前目录 .env > 用户主目录 ~/.mini-cc-env > 用户主目录 ~/.env)
     try:
         from dotenv import load_dotenv
-        load_dotenv()
+        # 1. 先尝试加载主目录全局配置
+        home_env_mini = os.path.join(os.path.expanduser("~"), ".mini-cc-env")
+        home_env = os.path.join(os.path.expanduser("~"), ".env")
+        if os.path.exists(home_env_mini):
+            load_dotenv(dotenv_path=home_env_mini)
+        elif os.path.exists(home_env):
+            load_dotenv(dotenv_path=home_env)
+            
+        # 2. 当前目录的 .env 优先级最高，会覆盖主目录的配置
+        load_dotenv(override=True)
     except ImportError:
         pass
 
@@ -53,7 +62,6 @@ async def main():
             print('\033[31m错误：未设置 OPENAI_API_KEY 环境变量。\033[0m')
             sys.exit(1)
             
-        print(f'\033[90m[系统配置] 已选择 OpenAI 兼容模型，模型名称: {model_name}\033[0m')
         provider_instance = OpenAIProvider(api_key, base_url, model_name)
         
     elif provider_name == 'anthropic':
@@ -64,7 +72,6 @@ async def main():
             print('\033[31m错误：未设置 ANTHROPIC_API_KEY 环境变量。\033[0m')
             sys.exit(1)
             
-        print(f'\033[90m[系统配置] 已选择 Anthropic 模型，模型名称: {model_name}\033[0m')
         provider_instance = AnthropicProvider(api_key, model_name)
     else:
         print(f'\033[31mPython 版本不支持 {provider_name}。支持: openai, anthropic\033[0m')
@@ -73,10 +80,47 @@ async def main():
     # 实例化核心智能体
     agent = Agent(provider_instance)
 
-    # 打印启动欢迎信息
-    print('\033[1;34m\n=== 欢迎使用 mini-cc (Python) ===\n\033[0m')
-    print('\033[90m输入您的需求，我将为您编写代码或执行系统操作。\033[0m')
-    print('\033[90m键入 "exit" 或 "quit" 退出程序。\n\033[0m')
+    # 打印类似 TS 版的 ASCII 启动欢迎信息
+    version = '1.0.0'
+    user_name = os.environ.get('USER', 'developer')
+    cwd = os.getcwd()
+    homedir = os.path.expanduser("~")
+    display_cwd = f"~{cwd[len(homedir):]}" if cwd.startswith(homedir) else cwd
+    provider_display = 'OpenAI / Compatible' if provider_name == 'openai' else 'Anthropic'
+    
+    u_disp = user_name[:15] + '...' if len(user_name) > 15 else user_name
+    m_disp = model_name[:22] + '...' if len(model_name) > 22 else model_name
+    c_disp = display_cwd[:35] + '...' if len(display_cwd) > 35 else display_cwd
+    
+    c_box = '\033[38;2;204;255;0m'
+    c_title = '\033[36m\033[1m'
+    c_cyan = '\033[36m'
+    c_blue = '\033[34m\033[4m'
+    c_gray = '\033[90m'
+    c_yellow = '\033[33m'
+    c_bg = '\033[48;2;5;5;5m'
+    res = '\033[0m'
+    
+    lines = [
+        (f"mini-cc CLI {version}", f"{c_title}mini-cc CLI {version}{res}", "", ""),
+        ("▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄", f"{c_box}▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄{res}", "", ""),
+        ("█               █", f"{c_box}█{c_bg}               {res}{c_box}█{res}", "Announcements", f"{c_title}Announcements{res}"),
+        ("█  cc       ■   █", f"{c_box}█{c_bg}  {c_box}\033[1mcc{res}{c_bg}       \033[38;2;229;229;229m■{res}{c_bg}   {res}{c_box}█{res}", "Try MINI-CC", "Try MINI-CC"),
+        ("█               █", f"{c_box}█{c_bg}               {res}{c_box}█{res}", "Website: https://mini-cc.raingpt.top/", f"Website: {c_blue}https://mini-cc.raingpt.top/{res}"),
+        ("▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀", f"{c_box}▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀{res}", "Github: https://github.com/you-want/mini-cc", f"Github: {c_blue}https://github.com/you-want/mini-cc{res}"),
+        ("", "", "", ""),
+        (f"Welcome back, {u_disp}", f"Welcome back, {c_cyan}{u_disp}{res}", "────────────────────────────────────────", f"{c_gray}────────────────────────────────────────{res}"),
+        (f"Model: {m_disp}", f"Model: {c_cyan}{m_disp}{res}", "Did you know?", f"{c_title}Did you know?{res}"),
+        (f"Provider: {provider_display}", f"Provider: {c_cyan}{provider_display}{res}", "You can use /buddy to summon a digital pet!", f"You can use {c_yellow}/buddy{res} to summon a digital pet!"),
+        (f"{c_disp}", f"{c_gray}{c_disp}{res}", "Type /clear to clear context history.", f"Type {c_yellow}/clear{res} to clear context history.")
+    ]
+    
+    print(f'{c_box}╭────────────────────────────────────────────────────────────────────────────────────╮{res}')
+    for raw_l, col_l, raw_r, col_r in lines:
+        pad_l = 39 - len(raw_l)
+        pad_r = 43 - len(raw_r)
+        print(f'{c_box}│{res} {col_l}{" " * max(0, pad_l)}{col_r}{" " * max(0, pad_r)} {c_box}│{res}')
+    print(f'{c_box}╰────────────────────────────────────────────────────────────────────────────────────╯{res}\n')
 
     # 进入主交互循环 (REPL)
     while True:
@@ -159,6 +203,13 @@ async def main():
 
 if __name__ == '__main__':
     # 运行异步主函数
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        pass
+
+def run_cli():
+    """供 pip 安装后作为全局命令入口调用"""
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, asyncio.CancelledError):

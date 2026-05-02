@@ -10,7 +10,7 @@ import json
 import time
 from typing import List, Dict, Callable, Any
 from openai import AsyncOpenAI
-from src.tools import tools
+from mini_cc.tools import tools
 from .base import LLMProvider
 
 class OpenAIProvider(LLMProvider):

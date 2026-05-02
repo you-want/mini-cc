@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 
 from .base import BaseTool
-from src.utils.console import console
 
 class MCPToolArgs(BaseModel):
     # MCP 工具的参数是动态的，所以我们用 dict 来接收

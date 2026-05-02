@@ -10,7 +10,7 @@ import json
 from typing import Callable, Any, Dict, List
 from anthropic import AsyncAnthropic
 from .base import LLMProvider
-from src.tools import tools
+from mini_cc.tools import tools
 
 class AnthropicProvider(LLMProvider):
     def __init__(self, api_key: str, model: str = 'claude-3-7-sonnet-20250219'):

@@ -1,8 +1,8 @@
 import pytest
 import os
 import shutil
-from src.tools.file_read import FileReadTool
-from src.tools.file_write import FileWriteTool
+from mini_cc.tools.file_read import FileReadTool
+from mini_cc.tools.file_write import FileWriteTool
 
 @pytest.fixture
 def temp_workspace(tmp_path):

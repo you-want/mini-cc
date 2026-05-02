@@ -3,7 +3,7 @@ from .base import BaseTool
 from .bash import BashTool
 from .file_read import FileReadTool
 from .file_write import FileWriteTool
-from src.agent.memory import AddMemoryTool
+from mini_cc.agent.memory import AddMemoryTool
 
 class ToolRegistry:
     """
