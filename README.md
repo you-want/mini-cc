@@ -64,26 +64,28 @@
 
 本项目采用多语言架构，计划使用多种编程语言实现相同的功能。目前已包含：
 
-- [TypeScript 实现](./typescript) (✅ 已完成)
-- *Python 实现 (⏳ 计划中)*
+- [TypeScript 实现](./typescript) (✅ 已完成) —— [📖 查看 TS 版文档](./typescript/README.md)
+- [Python 实现](./python) (✅ 已完成) —— [📖 查看 Python 版文档](./python/README.md)
 - *Go 实现 (⏳ 计划中)*
 - *Rust 实现 (⏳ 计划中)*
 
-## 🚀 快速开始 (TypeScript 版本)
+## 🚀 快速开始
 
-### 方法一：全局安装 (推荐)
+### TypeScript 版本
+
+#### 方法一：全局安装 (推荐)
 
 ```bash
-npm install -g mini-cc
+npm install -g @you-want/mini-cc
 mini-cc
 ```
 
-### 方法二：源码构建 & Bun 二进制打包
+#### 方法二：源码构建 & Bun 二进制打包
 
 如果你希望自己修改代码，或者将其打包为一个无需 Node 环境即可运行的单一二进制文件：
 
 ```bash
-git clone https://github.com/your-username/mini-cc.git
+git clone https://github.com/you-want/mini-cc.git
 cd mini-cc/typescript
 npm install
 npm run build
@@ -92,6 +94,28 @@ npm run build
 npm start
 # 或者构建独立二进制可执行文件（需安装 Bun）
 bun build --compile src/main.ts --outfile mini-cc
+```
+
+### Python 版本
+
+#### 方法一：全局安装 (推荐)
+
+```bash
+pip install you-want-mini-cc
+mini-cc
+```
+
+#### 方法二：源码构建
+
+```bash
+git clone https://github.com/you-want/mini-cc.git
+cd mini-cc/python
+python -m venv venv
+source venv/bin/activate
+pip install -e .
+
+# 运行
+mini-cc
 ```
 
 ### 配置 API Key
