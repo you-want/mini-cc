@@ -8,7 +8,7 @@ repository = "https://github.com/you-want/mini-cc"
 homepage = "https://mini-cc.raingpt.top/"
 license = "MIT"
 readme = "README.md"
-keywords = ["cli", "ai", "agent", "llm", "terminal", "mini-cc"]
+keywords = ["cli", "ai", "agent", "llm", "mini-cc"]
 categories = ["command-line-utilities"]
 
 [dependencies]
