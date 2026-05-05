@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -99,17 +100,60 @@ func printBanner() {
 	fmt.Printf("%s╰────────────────────────────────────────────────────────────────────────────────────╯%s\n\n", cBox, res)
 }
 
+func interactiveConfig(envPath string) {
+	color.Yellow("⚠️ 未检测到 API Key，进入初始化配置向导...")
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("? 请输入您的 OPENAI_API_KEY: ")
+	apiKey, _ := reader.ReadString('\n')
+	apiKey = strings.TrimSpace(apiKey)
+	if apiKey == "" {
+		color.Red("API Key 不能为空，已退出。")
+		os.Exit(1)
+	}
+
+	fmt.Print("? 请输入模型名称 (默认: qwen3.6-plus): ")
+	modelName, _ := reader.ReadString('\n')
+	modelName = strings.TrimSpace(modelName)
+	if modelName == "" {
+		modelName = "qwen3.6-plus"
+	}
+
+	fmt.Print("? 如果您使用的是兼容接口，请输入 BASE_URL (可选, 默认: https://api.openai.com/v1): ")
+	baseURL, _ := reader.ReadString('\n')
+	baseURL = strings.TrimSpace(baseURL)
+	if baseURL == "" {
+		baseURL = "https://api.openai.com/v1"
+	}
+
+	content := fmt.Sprintf("OPENAI_API_KEY=%s\nMODEL_NAME=%s\nOPENAI_BASE_URL=%s\n", apiKey, modelName, baseURL)
+	err := os.WriteFile(envPath, []byte(content), 0600)
+	if err != nil {
+		color.Red("保存配置文件失败: %v", err)
+		os.Exit(1)
+	}
+
+	color.HiGreen("✓ 配置已成功保存至 %s", envPath)
+
+	// 立即设置到当前运行环境
+	os.Setenv("OPENAI_API_KEY", apiKey)
+	os.Setenv("MODEL_NAME", modelName)
+	os.Setenv("OPENAI_BASE_URL", baseURL)
+}
+
 func main() {
 	// 尝试加载环境变量：先读取当前目录的 .env，再兜底读取用户主目录的全局配置 .mini-cc-env
 	_ = godotenv.Load(".env")
 	home, _ := os.UserHomeDir()
-	_ = godotenv.Load(filepath.Join(home, ".mini-cc-env"))
+	globalEnvPath := filepath.Join(home, ".mini-cc-env")
+	_ = godotenv.Load(globalEnvPath)
 
 	// 检查是否配置了必要的 API Key
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
-		color.Red("错误：未设置 OPENAI_API_KEY 环境变量。请在 .env 中配置。")
-		os.Exit(1)
+		// 如果没配置，启动交互式向导，引导用户填写并保存到全局配置
+		interactiveConfig(globalEnvPath)
+		apiKey = os.Getenv("OPENAI_API_KEY") // 重新获取
 	}
 
 	baseURL := os.Getenv("OPENAI_BASE_URL")
