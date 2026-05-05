@@ -12,8 +12,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/peterh/liner"
 
-	"minicc/pkg/agent"
-	"minicc/pkg/providers"
+	"github.com/you-want/mini-cc/go/pkg/agent"
+	"github.com/you-want/mini-cc/go/pkg/providers"
 )
 
 func getWorkspaceDir() string {

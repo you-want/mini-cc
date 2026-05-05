@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"minicc/pkg/schema"
+	"github.com/you-want/mini-cc/go/pkg/schema"
 )
 
 type FileReadTool struct{}

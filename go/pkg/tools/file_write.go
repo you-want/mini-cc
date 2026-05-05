@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"minicc/pkg/schema"
+	"github.com/you-want/mini-cc/go/pkg/schema"
 )
 
 type FileWriteTool struct{}

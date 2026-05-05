@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os/exec"
 
-	"minicc/pkg/schema"
-	"minicc/pkg/security"
+	"github.com/you-want/mini-cc/go/pkg/schema"
+	"github.com/you-want/mini-cc/go/pkg/security"
 )
 
 type BashTool struct{}

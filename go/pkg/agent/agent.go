@@ -7,9 +7,9 @@ import (
 
 	"github.com/fatih/color"
 
-	"minicc/pkg/providers"
-	"minicc/pkg/schema"
-	"minicc/pkg/tools"
+	"github.com/you-want/mini-cc/go/pkg/providers"
+	"github.com/you-want/mini-cc/go/pkg/schema"
+	"github.com/you-want/mini-cc/go/pkg/tools"
 )
 
 type Agent struct {

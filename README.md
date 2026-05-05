@@ -66,7 +66,7 @@
 
 - [TypeScript 实现](./typescript) (✅ 已完成) —— [📖 查看 TS 版文档](./typescript/README.md)
 - [Python 实现](./python) (✅ 已完成) —— [📖 查看 Python 版文档](./python/README.md)
-- *Go 实现 (⏳ 计划中)*
+- [Go 实现](./go) (✅ 已完成) —— [📖 查看 Go 版文档](./go/README.md)
 - *Rust 实现 (⏳ 计划中)*
 
 ## 🚀 快速开始
@@ -116,6 +116,29 @@ pip install -e .
 
 # 运行
 mini-cc
+```
+
+### Go 版本
+
+#### 方法一：全局安装 (推荐)
+
+只要你的电脑上安装了 Go 环境 (>=1.21)，就可以通过一行命令从 GitHub 源码直接拉取并编译成全局二进制命令：
+
+```bash
+go install github.com/you-want/mini-cc/go/cmd/mini-cc@latest
+mini-cc
+```
+
+#### 方法二：源码构建
+
+```bash
+git clone https://github.com/you-want/mini-cc.git
+cd mini-cc/go
+go mod tidy
+go build -o mini-cc cmd/mini-cc/main.go
+
+# 运行
+./mini-cc
 ```
 
 ### 配置 API Key
