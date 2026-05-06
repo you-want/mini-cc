@@ -88,9 +88,14 @@ fn execute(args: Value) -> std::pin::Pin<Box<dyn std::future::Future<Output = Re
             None => return Err("执行命令时出错: command 不能为空".to_string()),
         };
 
-        // 动态获取当前的工作区绝对路径
+        // 动态获取工作目录：优先使用约定的 test_file，若不存在则回退到当前目录
         let current_dir = std::env::current_dir().unwrap_or_default();
-        let workspace_dir = current_dir.parent().unwrap_or(&current_dir).join("test_file");
+        let preferred_workspace_dir = current_dir.parent().unwrap_or(&current_dir).join("test_file");
+        let workspace_dir = if preferred_workspace_dir.is_dir() {
+            preferred_workspace_dir
+        } else {
+            current_dir
+        };
 
         if let Err(reason) = check_security(&cmd) {
             // 注意：安全拦截错误作为普通的文本输出返回给大模型，让它知道自己被拦截了
