@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from datetime import datetime
 
@@ -58,7 +57,7 @@ class MemoryManager:
 
 # 提供一个便捷的工具，让大模型可以通过函数调用自己写记忆
 from pydantic import BaseModel, Field
-from src.tools.base import BaseTool
+from mini_cc.tools.base import BaseTool
 
 class AddMemoryArgs(BaseModel):
     memory_text: str = Field(..., description="要永久记住的关于项目的重要规则或约定（精简的一两句话）。")
