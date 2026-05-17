@@ -14,6 +14,7 @@ import { LLMProvider, ProviderResponse } from './index';
 export function createOpenAIProvider(apiKey: string, baseURL?: string, model: string = 'gpt-4o'): LLMProvider {
   // 初始化 OpenAI 客户端
   const openai = new OpenAI({ apiKey, baseURL });
+  const disableTools = process.env.DISABLE_TOOLS === 'true';
   
   // 会话上下文数组，保存历史消息
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -52,15 +53,21 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
    * 核心：发起聊天完成请求并处理流式响应，支持解析 reasoning_content (思维链)
    */
   const createMessage = async (onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
-    // 构造请求参数，使用 any 绕过类型检查以支持 Qwen 等独有的 enable_thinking 参数
+    // 构造请求参数，使用 any 绕过类型检查以支持部分兼容接口的独有参数
     const requestOptions: any = {
       model,
       messages,
-      tools: getTools(),
       temperature: 0.2,
       stream: true,
-      enable_thinking: true // 特殊参数，部分兼容模型需要它来开启思考流
     };
+
+    if (!disableTools) {
+      requestOptions.tools = getTools();
+    }
+
+    if (baseURL?.includes('dashscope.aliyuncs.com')) {
+      requestOptions.enable_thinking = true;
+    }
 
     const stream = await openai.chat.completions.create(requestOptions) as any;
 
@@ -69,6 +76,7 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
     let toolCallsMap: Record<number, any> = {};
     let isThinkingStarted = false;
     let isContentStarted = false;
+    let ollamaToolCallBuffer = ''; // 用于缓冲 Ollama 格式的工具调用
 
     // 遍历流式数据块
     for await (const chunk of stream) {
@@ -85,8 +93,17 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
         onTextResponse(delta.reasoning_content, true);
       }
 
-      // 提取并推送常规文本回复
+      // 提取并推送常规文本回复 / 处理 Ollama 工具调用格式
       if (delta.content) {
+        ollamaToolCallBuffer += delta.content;
+        
+        // 检查是否是 Ollama 格式的工具调用（以 { 开头）
+        if (ollamaToolCallBuffer.trim().startsWith('{')) {
+          // 不立即输出，因为可能是工具调用
+          continue;
+        }
+        
+        // 如果不是工具调用格式，正常输出
         if (!isContentStarted) {
           onTextResponse('\n' + '='.repeat(20) + ' 完整回复 ' + '='.repeat(20) + '\n', false);
           isContentStarted = true;
@@ -95,7 +112,7 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
         onTextResponse(delta.content, false);
       }
 
-      // 组装流式的工具调用参数块
+      // 组装流式的工具调用参数块（标准 OpenAI 格式）
       if (delta.tool_calls) {
         for (const tc of delta.tool_calls) {
           if (!toolCallsMap[tc.index]) {
@@ -117,6 +134,26 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
             toolCallsMap[tc.index].function.arguments += tc.function.arguments;
           }
         }
+      }
+    }
+
+    // 尝试解析 Ollama 格式的工具调用
+    if (ollamaToolCallBuffer.trim()) {
+      try {
+        const parsed = JSON.parse(ollamaToolCallBuffer);
+        if (parsed.name && parsed.arguments) {
+          // 这是 Ollama 格式的工具调用
+          toolCallsMap[0] = {
+            id: `call_${Date.now()}`,
+            type: 'function',
+            function: { 
+              name: parsed.name, 
+              arguments: typeof parsed.arguments === 'string' ? parsed.arguments : JSON.stringify(parsed.arguments)
+            }
+          };
+        }
+      } catch {
+        // 如果不是有效的 JSON，忽略
       }
     }
 
