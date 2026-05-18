@@ -36,8 +36,10 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@types/glob": "^9.0.0",
     "chalk": "^4.1.2",
     "dotenv": "^16.4.7",
+    "glob": "^13.0.6",
     "ink": "^3.2.0",
     "ink-text-input": "4.0.3",
     "inquirer": "^8.2.6",

@@ -80,8 +80,17 @@ export function createAgent(provider: LLMProvider): Agent {
         console.log(`\x1b[36m▶ [Agent] 正在调用工具: ${call.name} ...\x1b[0m`);
         
         // 依赖注入模式执行工具：传入解析好的参数和上下文环境
-        let result = await tool.execute(call.args, context);
+        let rawResult = await tool.execute(call.args, context);
         console.log(`\x1b[32m✔ [Agent] 工具 ${call.name} 执行完毕。\x1b[0m`);
+        
+        // 将对象类型的结果序列化为字符串（新工具返回结构化数据）
+        let result: string;
+        if (typeof rawResult === 'string') {
+          result = rawResult;
+        } else {
+          // 格式化对象结果为易读的字符串
+          result = JSON.stringify(rawResult, null, 2);
+        }
         
         // 事件驱动 (Event-Driven): 触发 PostToolUse 钩子，可以在工具执行后处理结果
         await globalHooks.trigger('PostToolUse', { toolName: call.name, result });

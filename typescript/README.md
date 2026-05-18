@@ -11,6 +11,7 @@
 ## ✨ 核心特性
 
 - **纯函数式 Agent 循环**：清晰展示大模型如何自主调用工具、思考（CoT）和反馈。
+- **完整的工具生态**：9 个核心工具，涵盖文件操作、搜索、编辑、网络请求等场景。
 - **安全的 Bash 沙盒**：实现了命令执行包装器的剥离与高危破坏性命令（如 `rm -rf /`）拦截。
 - **.ai_memory 记忆引擎**：实现两步法则的上下文记录和过长 Token 截断机制。
 - **MCP 插件集成**：支持模型上下文协议，实现工具的无缝扩充（例如安全执行网络请求与系统操作）。
@@ -74,7 +75,32 @@ mini-cc config set BASE_URL=https://api.deepseek.com/v1
 mini-cc config set MODEL_NAME=deepseek-coder
 ```
 
-## 🛠️ 架构图解
+## 🛠️ 工具生态
+
+mini-cc 提供了完整的工具集，让 AI 能够自主完成各种开发任务：
+
+### 文件操作工具
+- **FileReadTool**: 读取文件内容，支持大文件自动截断
+- **FileWriteTool**: 创建或覆盖文件
+- **FileEditTool**: 智能编辑，基于精确字符串替换
+
+### 文件搜索工具
+- **GlobTool**: 使用 glob 模式搜索文件（如 `**/*.ts`）
+- **GrepTool**: 内容搜索，支持正则表达式和上下文显示
+
+### 系统操作工具
+- **BashTool**: 安全的命令执行，带破坏性命令检测
+- **GitStatusTool**: Git 仓库状态查询
+
+### 网络工具
+- **WebFetchTool**: HTTP/HTTPS 请求，支持 GET/POST
+
+### 高级工具
+- **AgentTool**: Agent 分身术，支持子任务并行执行
+
+详细使用说明请查看 [工具使用指南](./docs/tools-guide.md)。
+
+## 🏗️ 架构图解
 
 ### Agent 循环与工具调用 (Tool Use)
 系统通过 `AgentTool` (Agent 分身术) 和基于 stdio 的进程隔离通信，把复杂的命令执行下发给不同子工具。主控节点持续将结果追加进 `messages`，一旦遇到 `tool_calls` 即打断当前生成，进入异步工具调用，结果产生后再唤醒生成，形成自动循环。

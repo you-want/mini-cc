@@ -69,8 +69,13 @@ export async function startApp(prefetchConfig: any) {
   // 初始化 dotenv 环境变量，加载 .env 文件中的配置
   dotenv.config();
 
-  // 获取选择的大模型提供商（默认为 openai）
+  // 配置读取优先级：
+  // 1. 本地 .env 文件（最高优先级）
+  // 2. 全局配置文件 ~/.mini-cc/config.json
+  // 3. 代码默认值
   const config = readConfig();
+  
+  // 优先使用 .env 文件中的配置，如果没有则使用全局配置
   const envProvider = (process.env.PROVIDER || config.PROVIDER || 'openai').toLowerCase();
   
   // 交互式配置逻辑：如果环境中没有对应的 Key，则弹出问答
@@ -80,6 +85,7 @@ export async function startApp(prefetchConfig: any) {
   let modelName = '';
 
   if (PROVIDER === 'openai') {
+    // 优先级：.env > 全局配置 > 默认值
     apiKey = process.env.OPENAI_API_KEY || config.OPENAI_API_KEY || '';
     baseURL = process.env.OPENAI_BASE_URL || config.OPENAI_BASE_URL;
     modelName = process.env.MODEL_NAME || config.MODEL_NAME || 'qwen3.6-plus';
