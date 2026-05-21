@@ -26,6 +26,7 @@ const mockStateStore = createAppStateStore({
     allowedTools: new Set(),
     deniedTools: new Set(),
   },
+  activeSkill: null,
 });
 
 // 创建模拟的工具上下文

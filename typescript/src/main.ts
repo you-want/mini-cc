@@ -43,6 +43,10 @@ import { stopCapturingEarlyInput } from './infrastructure/utils/earlyInput';
 import { profileCheckpoint, dumpStartupProfile } from './utils/startupProfiler';
 // 引入遥测与动态配置
 import { logEvent, getDynamicConfig_CACHED_MAY_BE_STALE } from './services/analytics/firstPartyEventLogger';
+// 引入技能系统
+import { SkillManager } from './skills/SkillManager';
+import * as path from 'path';
+import { initializeMcpTools } from './services/mcp/config';
 
 // 应用启动函数，负责初始化大模型服务商、触发 AppStart 生命周期钩子等
 export async function startApp(prefetchConfig: any) {
@@ -57,6 +61,28 @@ export async function startApp(prefetchConfig: any) {
 
   // 触发 AppStart 生命周期钩子
   await globalHooks.trigger('AppStart', { prefetchConfig });
+
+  // 初始化技能系统
+  const skillManager = SkillManager.getInstance();
+  skillManager.loadBuiltInSkills();
+  const userSkillsDir = path.join(process.env.HOME || '', '.mini-cc', 'skills');
+  const projectSkillsDir = path.join(process.cwd(), '.mini-cc', 'skills');
+  skillManager.loadUserSkills(userSkillsDir);
+  skillManager.loadUserSkills(projectSkillsDir);
+  console.log(`[SkillManager] 已加载 ${skillManager.getStats().total} 个技能（含内置与自定义）`);
+
+  const mcpInit = await initializeMcpTools(process.cwd());
+  if (mcpInit.connectedServers.length > 0) {
+    console.log(`[MCP] 已连接 ${mcpInit.connectedServers.length} 个服务器，注册 ${mcpInit.registeredTools} 个工具`);
+  }
+  if (mcpInit.errors.length > 0) {
+    for (const err of mcpInit.errors) {
+      console.warn(err);
+    }
+  }
+  globalHooks.register('AppExit', async () => {
+    await mcpInit.disconnect();
+  });
 
   // 处理 Fast-path：极速通道，用于无需加载大模型直接返回的情况（如 --version）
   const args = process.argv.slice(2);
@@ -228,7 +254,9 @@ export async function startApp(prefetchConfig: any) {
   // 处理清空对话命令逻辑
   const handleClear = () => {
     const currentConfig = readConfig();
-    if (PROVIDER === 'openai') {
+    const currentProvider = (process.env.PROVIDER || currentConfig.PROVIDER || 'openai').toLowerCase();
+
+    if (currentProvider === 'openai') {
       const apiKey = process.env.OPENAI_API_KEY || currentConfig.OPENAI_API_KEY || '';
       const baseURL = process.env.OPENAI_BASE_URL || currentConfig.OPENAI_BASE_URL;
       const modelName = process.env.MODEL_NAME || currentConfig.MODEL_NAME || 'qwen3.6-plus';
@@ -238,6 +266,12 @@ export async function startApp(prefetchConfig: any) {
       const modelName = process.env.MODEL_NAME || currentConfig.MODEL_NAME || 'claude-3-7-sonnet-20250219';
       providerInstance = createAnthropicProvider(apiKey, modelName);
     }
+    const newAgent = createAgent(providerInstance);
+    Object.assign(agent, newAgent);
+  };
+
+  const handleSwitchProvider = (newProvider: LLMProvider) => {
+    providerInstance = newProvider;
     const newAgent = createAgent(providerInstance);
     Object.assign(agent, newAgent);
   };
@@ -261,6 +295,7 @@ export async function startApp(prefetchConfig: any) {
       agent,
       onExit: handleExit,
       onClear: handleClear,
+      onSwitchProvider: handleSwitchProvider,
       initialInput: earlyInput
     })
   );

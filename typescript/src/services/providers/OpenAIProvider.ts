@@ -52,13 +52,17 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
   /**
    * 核心：发起聊天完成请求并处理流式响应，支持解析 reasoning_content (思维链)
    */
-  const createMessage = async (onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+  const createMessage = async (
+    onTextResponse: (text: string, isThinking?: boolean) => void,
+    abortSignal?: AbortSignal
+  ): Promise<ProviderResponse> => {
     // 构造请求参数，使用 any 绕过类型检查以支持部分兼容接口的独有参数
     const requestOptions: any = {
       model,
       messages,
       temperature: 0.2,
       stream: true,
+      signal: abortSignal,
     };
 
     if (!disableTools) {
@@ -80,6 +84,9 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
 
     // 遍历流式数据块
     for await (const chunk of stream) {
+      if (abortSignal?.aborted) {
+        break;
+      }
       const delta = chunk.choices[0]?.delta;
       if (!delta) continue;
 
@@ -193,11 +200,19 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
   };
 
   return {
-    sendMessage: async (userMessage: string, onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+    sendMessage: async (
+      userMessage: string,
+      onTextResponse: (text: string, isThinking?: boolean) => void,
+      abortSignal?: AbortSignal
+    ): Promise<ProviderResponse> => {
       messages.push({ role: 'user', content: userMessage });
-      return createMessage(onTextResponse);
+      return createMessage(onTextResponse, abortSignal);
     },
-    sendToolResults: async (results: { id: string; name: string; result: string; isError?: boolean }[], onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+    sendToolResults: async (
+      results: { id: string; name: string; result: string; isError?: boolean }[],
+      onTextResponse: (text: string, isThinking?: boolean) => void,
+      abortSignal?: AbortSignal
+    ): Promise<ProviderResponse> => {
       // 封装工具执行结果并追加到上下文
       for (const r of results) {
         messages.push({
@@ -207,7 +222,7 @@ export function createOpenAIProvider(apiKey: string, baseURL?: string, model: st
         });
       }
       
-      return createMessage(onTextResponse);
+      return createMessage(onTextResponse, abortSignal);
     }
   };
 }

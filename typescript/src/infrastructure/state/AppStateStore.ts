@@ -7,6 +7,8 @@ export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P];
 };
 
+import type { PermissionContext } from '../permissions';
+
 /**
  * 任务状态接口
  */
@@ -25,7 +27,8 @@ export interface AppState {
     mainLoopModel: ModelSetting;
   };
   tasks: { [taskId: string]: TaskState };
-  toolPermissionContext: any; // 工具权限上下文 (待完善)
+  toolPermissionContext: PermissionContext;
+  activeSkill: null | { name: string; prompt: string };
 }
 
 type Listener = (state: DeepReadonly<AppState>) => void;
@@ -105,7 +108,12 @@ export const globalAppState = createAppStateStore({
     mainLoopModel: 'openai',
   },
   tasks: {},
-  toolPermissionContext: {},
+  toolPermissionContext: {
+    strategy: 'default',
+    allowedTools: new Set<string>(),
+    deniedTools: new Set<string>(),
+  },
+  activeSkill: null,
 });
 
 /**

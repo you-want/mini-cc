@@ -1,323 +1,185 @@
-# Mini-CC 新工具手动测试指南
+# Mini-CC 生产版本手动测试指南
 
-## 📋 测试准备
+文档对应关系：
+- 产品说明：README.md
+- 快速冒烟：QUICK_TEST.md
+- 完整手测：你正在阅读的 MANUAL_TEST_GUIDE.md
+- 版本变更：CHANGELOG.md
+
+## 📋 测试准备（必做）
 
 ### 1. 环境检查
 ```bash
-# 确保在项目根目录
-cd /Users/rain9/github/claude-code/mini-cc/typescript
-
-# 检查依赖是否安装
-npm install
-
-# 编译项目（确保没有错误）
-npm run build
+cd typescript
+pnpm install
+pnpm run build
+pnpm test
 ```
 
 ### 2. 启动 mini-cc
 ```bash
-# 使用开发模式启动（支持热重载）
-npm dev
-
-# 或者使用生产模式
-npm start
+pnpm start
 ```
+
+（截图占位：启动欢迎页 / WelcomeBanner）
 
 ---
 
-## 🧪 测试流程
+## 🧪 测试流程（生产关键路径）
 
-### 测试 1: TodoWriteTool - 任务清单管理
+### 测试 1：权限系统（默认安全 + 可预审批）
 
-**目标**: 验证任务清单的创建、更新和完成功能
+**目标**：确认敏感工具默认拒绝，授权后可执行，并能查看权限状态
 
-#### 步骤 1: 创建任务清单
-在 mini-cc 对话中输入：
-```
-请帮我创建一个任务清单，包含以下任务：
-1. 学习 TypeScript 基础（进行中）
-2. 编写单元测试（待办）
-3. 阅读文档（待办）
-```
+1) 输入：`/permissions`  
+预期：显示策略、allow/deny 列表、hard_deny 信息
 
-**预期行为**:
-- Agent 应该调用 `TodoWrite` 工具
-- 创建包含 3 个任务的清单
-- 第一个任务状态为 `in_progress`，其他为 `pending`
+2) 输入：`请用 BashTool 执行 echo hello`  
+预期：被拒绝，并提示使用 `/allow BashTool`
 
-#### 步骤 2: 更新任务状态
-继续输入：
-```
-我已经完成了第一个任务，现在正在编写单元测试
-```
+3) 输入：`/allow BashTool`  
+再输入：`请用 BashTool 执行 echo hello`  
+预期：执行成功并输出 `hello`
 
-**预期行为**:
-- Agent 应该再次调用 `TodoWrite` 工具
-- 更新任务状态：第一个变为 `completed`，第二个变为 `in_progress`
+4) 输入：`/deny BashTool`  
+再输入：`请用 BashTool 执行 echo hello`  
+预期：再次被拒绝
 
-#### 步骤 3: 完成所有任务
-继续输入：
-```
-所有任务都已完成
-```
+（截图占位：权限拒绝提示 + /allow 授权 + /deny 禁止）
 
-**预期行为**:
-- Agent 调用 `TodoWrite` 工具
-- 所有任务标记为 `completed`
-- 任务清单自动清空
-
-**✅ 验证点**:
-- [ ] 任务能够正确创建
-- [ ] 状态能够正确更新
-- [ ] 全部完成后清单清空
-- [ ] 控制台输出 `[TodoWrite] 任务列表已更新` 日志
+**✅ 验证点**
+- [ ] 默认拒绝敏感工具（BashTool/FileWriteTool/FileEditTool/AgentTool/NotebookEdit）
+- [ ] /allow 与 /deny 生效
+- [ ] /permissions 输出正确
 
 ---
 
-### 测试 2: TaskCreateTool & TaskListTool - 后台任务管理
+### 测试 2：Provider 热切换（会话级/全局级）
 
-**目标**: 验证任务的创建和列表查看功能
+**目标**：无需重启切换 provider，并且切换后上下文被正确清空
 
-#### 步骤 1: 创建任务
-在 mini-cc 对话中输入：
-```
-请创建一个任务：实现用户认证模块，需要包括 JWT token 生成和验证功能
-```
+1) 输入：`/provider`  
+预期：显示当前 provider + 可用 provider 列表
 
-**预期行为**:
-- Agent 调用 `TaskCreate` 工具
-- 生成唯一的任务 ID（格式：task_xxxxxxxx）
-- 返回成功消息
+2) 输入：`/provider openai -s` 或 `/provider anthropic -s`  
+预期：提示“已切换”，并清空会话（历史消息归零）
 
-#### 步骤 2: 再创建一个任务
-继续输入：
-```
-再创建一个任务：编写 API 文档，描述所有接口的使用方法
-```
+（截图占位：/provider 列表与切换成功提示）
 
-**预期行为**:
-- 创建第二个任务
-- 有不同的任务 ID
-
-#### 步骤 3: 查看任务列表
-输入：
-```
-请列出当前所有的任务
-```
-
-**预期行为**:
-- Agent 调用 `TaskList` 工具
-- 显示两个任务的列表
-- 包含任务 ID、状态和描述
-
-**✅ 验证点**:
-- [ ] 任务能够成功创建
-- [ ] 每个任务有唯一的 ID
-- [ ] 任务列表正确显示所有任务
-- [ ] 控制台输出 `[TaskCreate]` 和 `[TaskList]` 日志
+**✅ 验证点**
+- [ ] 会话级切换成功（无需重启）
+- [ ] 切换后上下文清空，避免混聊
 
 ---
 
-### 测试 3: WebSearchTool - 网络搜索
+### 测试 3：工具生态（核心能力覆盖）
 
-**目标**: 验证网络搜索功能
+**目标**：覆盖“读/搜/编/写/网/任务/代码智能/Notebook”等关键工具
 
-#### 步骤 1: 执行简单搜索
-在 mini-cc 对话中输入：
-```
-请搜索一下 "TypeScript 5.0 新特性"
-```
+#### 3.1 只读工具（无需授权）
+- 输入：`请读取 package.json 并告诉我 version 字段`
+- 预期：调用 FileReadTool
 
-**预期行为**:
-- Agent 调用 `WebSearch` 工具
-- 返回搜索结果列表
-- 包含标题、URL 和摘要
+#### 3.2 搜索工具（无需授权）
+- 输入：`请用 GrepTool 搜索 src 下出现 "createAgent(" 的位置，显示 3 行上下文`
+- 预期：调用 GrepTool
 
-#### 步骤 2: 指定结果数量
-继续输入：
-```
-请搜索 "React hooks 最佳实践"，只返回 3 个结果
-```
+#### 3.3 编辑/写入工具（需要 /allow）
+- 输入：`请把 README.md 的标题下方增加一行 "test line"（用 FileEditTool）`
+- 预期：未 /allow 时被拒绝；`/allow FileEditTool` 后可执行
 
-**预期行为**:
-- 返回恰好 3 个搜索结果
-- 结果质量较高
+#### 3.4 网络工具（无需授权，依赖网络）
+- 输入：`请用 WebFetchTool 获取 https://example.com 的标题`
+- 输入：`请用 WebSearchTool 搜索 "TypeScript 5.0 release notes" 返回 3 条`
 
-**⚠️ 注意**: 
-- 此测试需要网络连接
-- 如果网络不通或 DuckDuckGo 无法访问，可能会失败
-- 这是正常现象，不影响工具的其他功能
+#### 3.5 任务工具（无需授权）
+- 输入：`请创建任务：实现登录页`
+- 输入：`列出当前所有任务`
 
-**✅ 验证点**:
-- [ ] 能够发起网络搜索请求
-- [ ] 返回搜索结果（如果网络正常）
-- [ ] 控制台输出 `[WebSearch] 执行搜索` 日志
+#### 3.6 代码智能与 Notebook（NotebookEdit 需要 /allow）
+- 输入：`请用 LSPTool 列出 src/application/QueryEngine.ts 中的符号`
+- NotebookEdit：参考 QUICK_TEST 脚本生成的 `/tmp/*.ipynb` 文件，然后：
+  - `/allow NotebookEdit`
+  - `请在 /tmp/test_manual_notebook.ipynb 中添加一个 code cell：print("Hello")`
 
 ---
 
-### 测试 4: LSPTool - 代码智能（简化版）
+### 测试 4：技能系统（内置 + 自定义）
 
-**目标**: 验证代码符号查找功能
+**目标**：技能列表可见、可激活、激活后 prompt 注入生效；可加载用户自定义技能
 
-#### 准备工作
-首先，确保项目中有一个 TypeScript 文件，例如：
-```bash
-# 创建一个测试文件
-cat > /tmp/test_lsp.ts << 'EOF'
-function calculateTotal(items: number[]): number {
-  return items.reduce((sum, item) => sum + item, 0);
+1) 输入：`/skill`  
+预期：能看到 remember/simplify/verify 等
+
+2) 输入：`/skill simplify`  
+再输入：`把下面这段话用更简单的方式表达：......`  
+预期：回答风格/约束发生变化（说明注入生效）
+
+3) 自定义技能（可选）
+- 创建 `~/.mini-cc/skills/my_style.json`：
+```json
+{
+  "name": "my_style",
+  "displayName": "我的输出风格",
+  "description": "强制用要点列表输出，避免长段落",
+  "category": "workflow",
+  "prompt": "接下来所有回复请使用要点列表输出，避免长段落。",
+  "tags": ["style"]
 }
+```
+- 重启 mini-cc
+- 输入：`/skill my_style`
+- 预期：技能出现在列表里并可激活
 
-class UserService {
-  getUsers(): string[] {
-    return ["Alice", "Bob"];
+（截图占位：/skill 列表 + 激活提示）
+
+**✅ 验证点**
+- [ ] /skill 列表可用
+- [ ] 激活技能后注入生效
+- [ ] 自定义技能可加载（重启后生效）
+
+---
+
+### 测试 5：MCP 插件（动态工具加载）
+
+**目标**：启动时连接 MCP server，并将远端工具注册进工具列表（模型可调用）
+
+建议用仓库自带示例：`examples/mcp-servers/weather.js`（Node）。
+
+1) 创建项目级 MCP 配置 `<project>/.mini-cc/settings.json`（示例）：
+```json
+{
+  "mcpServers": {
+    "weather": {
+      "command": "node",
+      "args": ["examples/mcp-servers/weather.js"]
+    }
   }
 }
-
-const MAX_RETRY = 3;
-EOF
 ```
 
-#### 步骤 1: 获取文件中的符号
-在 mini-cc 对话中输入：
-```
-请分析文件 /tmp/test_lsp.ts，列出其中定义的所有符号
-```
+2) 启动 mini-cc，观察日志  
+预期：出现 `[MCP] 已连接 ... 注册 ... 个工具`
 
-**预期行为**:
-- Agent 调用 `LSPTool` 工具，操作为 `getSymbols`
-- 返回找到的符号列表
-- 应该包含：calculateTotal、UserService、getUsers、MAX_RETRY
+3) 提示模型使用 MCP 工具（示例）：  
+输入：`请调用天气 MCP 工具查询 Shanghai 的天气`  
+预期：模型触发 `mcp__weather__...` 工具调用并返回结果
 
-#### 步骤 2: 查找符号定义
-继续输入：
-```
-请在 /tmp/test_lsp.ts 中查找 calculateTotal 的定义位置
-```
+（截图占位：启动日志 + MCP tool 调用记录）
 
-**预期行为**:
-- Agent 调用 `LSPTool` 工具，操作为 `findDefinition`
-- 返回定义所在的行号和内容
-
-#### 步骤 3: 查找符号引用
-继续输入：
-```
-请在当前项目中查找 console 的所有引用
-```
-
-**预期行为**:
-- Agent 调用 `LSPTool` 工具，操作为 `findReferences`
-- 在整个项目中搜索（可能需要一些时间）
-- 返回多个引用位置
-
-**✅ 验证点**:
-- [ ] 能够正确识别文件中的符号
-- [ ] 能够找到符号的定义位置
-- [ ] 能够搜索符号的引用
-- [ ] 控制台输出 `[LSPTool]` 相关日志
+**✅ 验证点**
+- [ ] 启动时能连接 MCP
+- [ ] 工具被注册并可被模型调用
+- [ ] 退出应用后 MCP 连接被关闭（无残留进程/无持续输出）
 
 ---
 
-### 测试 5: NotebookEditTool - Jupyter Notebook 编辑
+## 🧯 故障排查（发布前常见）
 
-**目标**: 验证 Notebook 文件的读写和编辑功能
-
-#### 步骤 1: 创建测试 Notebook
-在终端中执行：
-```bash
-# 创建一个空的 Notebook 文件
-cat > /tmp/test_notebook.ipynb << 'EOF'
-{
-  "cells": [],
-  "metadata": {},
-  "nbformat": 4,
-  "nbformat_minor": 5
-}
-EOF
-```
-
-#### 步骤 2: 添加代码单元格
-在 mini-cc 对话中输入：
-```
-请在 /tmp/test_notebook.ipynb 中添加一个代码单元格，内容为：print("Hello, World!")
-```
-
-**预期行为**:
-- Agent 调用 `NotebookEdit` 工具，操作为 `add`
-- 添加一个新的 code 类型单元格
-- 返回成功消息，显示当前单元格数量
-
-#### 步骤 3: 添加 Markdown 单元格
-继续输入：
-```
-再添加一个 Markdown 单元格，内容为：# 这是我的第一个 Notebook
-```
-
-**预期行为**:
-- 添加一个 markdown 类型单元格
-- 单元格数量增加到 2
-
-#### 步骤 4: 读取 Notebook 内容
-输入：
-```
-请读取 /tmp/test_notebook.ipynb 的内容
-```
-
-**预期行为**:
-- Agent 调用 `NotebookEdit` 工具，操作为 `read`
-- 返回所有单元格的列表
-- 显示 2 个单元格的详细信息
-
-#### 步骤 5: 更新单元格
-输入：
-```
-请更新第 1 个单元格（索引 0）的内容为：print("Updated Hello")
-```
-
-**预期行为**:
-- Agent 调用 `NotebookEdit` 工具，操作为 `update`
-- 更新指定索引的单元格内容
-- 返回成功消息
-
-#### 步骤 6: 删除单元格
-输入：
-```
-请删除第 2 个单元格（索引 1）
-```
-
-**预期行为**:
-- Agent 调用 `NotebookEdit` 工具，操作为 `delete`
-- 删除指定索引的单元格
-- 剩余 1 个单元格
-
-**✅ 验证点**:
-- [ ] 能够添加 code 和 markdown 单元格
-- [ ] 能够读取 Notebook 内容
-- [ ] 能够更新现有单元格
-- [ ] 能够删除单元格
-- [ ] 控制台输出 `[NotebookEdit]` 相关日志
-
----
-
-## 📊 综合测试场景
-
-### 场景 1: 完整的开发工作流
-
-**模拟任务**: 开发一个简单的 Python 数据分析脚本
-
-1. **创建任务清单**
-   ```
-   我要开发一个数据分析脚本，请帮我创建任务清单：
-   1. 导入必要的库（pandas, numpy）
-   2. 加载 CSV 数据
-   3. 数据清洗和预处理
-   4. 执行统计分析
-   5. 可视化结果
-   ```
-
-2. **创建后台任务**
-   ```
-   请创建任务：编写数据加载函数，支持多种文件格式
+- 工具被拒绝：先 `/permissions` 看状态，必要时 `/allow <ToolName>`
+- 网络相关失败：可能是网络/代理环境问题，不影响离线能力
+- MCP 连接失败：检查 settings.json 的 command/args 是否可运行
+- 退出卡住：优先检查是否有外部 MCP 子进程未退出（正常情况下 AppExit 会自动断开）
    ```
 
 3. **搜索最新信息**

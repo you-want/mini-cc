@@ -31,6 +31,7 @@ beforeEach(() => {
       allowedTools: new Set(),
       deniedTools: new Set(),
     },
+    activeSkill: null,
   });
 
   mockContext = {

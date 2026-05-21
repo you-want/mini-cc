@@ -1,9 +1,17 @@
-# 🧪 手动测试快速开始
+# 🧪 发布前快速冒烟测试（10 分钟）
 
-## ⚡ 一键运行测试准备
+本清单用于准备发布版本前的最小验证集合。
+
+文档对应关系：
+- 产品说明：README.md
+- 快速冒烟：你正在阅读的 QUICK_TEST.md
+- 完整手测：MANUAL_TEST_GUIDE.md
+- 版本变更：CHANGELOG.md
+
+## ⚡ 一键执行（推荐）
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd typescript
 ./run-manual-tests.sh
 ```
 
@@ -15,138 +23,80 @@ cd /Users/rain9/github/claude-code/mini-cc/typescript
 
 ---
 
-## 📖 详细测试指南
+## ✅ 交互 UI 冒烟（必测）
 
-查看完整的手动测试流程：
+启动：
+
 ```bash
-open MANUAL_TEST_GUIDE.md
+cd typescript
+pnpm install
+pnpm run build
+pnpm start
 ```
 
-或者在浏览器中打开 `MANUAL_TEST_GUIDE.md` 文件。
+1) **权限系统是否生效**
+- 输入：`/permissions`
+- 预期：能看到策略、allow/deny 列表、hard_deny 提示
+
+![permissions](./assets/permissions.png)
+
+2) **安全工具是否可用（无需授权）**
+- 输入：`请用 GlobTool 列出 src 目录下所有 .ts 文件（限制 10 个）`
+- 预期：调用 GlobTool 并返回结果
+
+3) **敏感工具是否默认拒绝**
+- 输入：`请用 BashTool 执行 echo hello`
+- 预期：被权限拒绝，并提示使用 `/allow BashTool`
+
+4) **授权后是否可执行敏感工具**
+- 输入：`/allow BashTool`
+- 再输入：`请用 BashTool 执行 echo hello`
+- 预期：成功执行并返回 `hello`
+
+![allow](./assets/allow.png)
+
+5) **Provider 热切换**
+- 输入：`/provider`
+- 输入：`/provider openai -s` 或 `/provider anthropic -s`
+- 预期：显示切换成功，并清空会话
+
+6) **中断是否生效**
+- 在模型输出过程中按 `Esc`（或 `Ctrl+C`）
+- 预期：停止输出，并出现“已中断当前请求”的系统提示
 
 ---
 
-## 🎯 快速测试清单
+## 🧩 MCP 冒烟（可选，但建议）
 
-### 1️⃣ TodoWriteTool（任务清单）
-```
-对话输入：请帮我创建任务清单：1.学习TypeScript（进行中） 2.编写测试（待办）
-预期：Agent 调用 TodoWrite 工具，创建2个任务
-```
+前提：你有可用的 MCP server 配置（项目级或用户级）。
 
-### 2️⃣ TaskCreateTool（创建任务）
-```
-对话输入：请创建任务：实现用户认证模块
-预期：返回任务ID，如 task_xxxxxxxx
-```
+- 项目级配置文件：`<project>/.mini-cc/settings.json`
+- 用户级配置文件：`~/.mini-cc/settings.json`
 
-### 3️⃣ TaskListTool（查看任务）
-```
-对话输入：列出所有任务
-预期：显示之前创建的任务列表
-```
+启动 mini-cc 后观察日志：
+- 预期：出现类似 `[MCP] 已连接 ... 注册 ... 个工具` 的输出
 
-### 4️⃣ WebSearchTool（网络搜索）
-```
-对话输入：请搜索 "TypeScript 5.0 新特性"
-预期：返回搜索结果（需要网络连接）
-```
-
-### 5️⃣ LSPTool（代码分析）
-```
-对话输入：请分析文件 /tmp/test_manual_lsp.ts 中的所有符号
-预期：列出函数、类、接口等符号
-```
-
-### 6️⃣ NotebookEditTool（编辑Notebook）
-```
-对话输入：请在 /tmp/test_manual_notebook.ipynb 中添加一个代码单元格，内容为 print("Hello")
-预期：成功添加单元格
-```
+![mcp](./assets/mcp.png)
 
 ---
 
-## 🔍 验证要点
+## 📖 需要更细的手测？
 
-启动 mini-cc 后，观察终端输出中的日志：
+查看 [MANUAL_TEST_GUIDE.md](./MANUAL_TEST_GUIDE.md)
 
-```
-[TodoWrite] 任务列表已更新: 2 个任务
-[TaskCreate] 创建新任务: task_5f2400bf - 测试任务
-[TaskList] 查询到 1 个任务
-[WebSearch] 执行搜索: "TypeScript tutorial"
-[LSPTool] 执行操作: getSymbols on /path/to/file.ts
-[NotebookEdit] 执行操作: add on /tmp/test.ipynb
-```
-
-如果看到这些日志，说明工具被正确调用了！
-
----
-
-## 📊 测试报告
-
-测试完成后，可以填写简单的报告：
+## 📊 发布记录（建议在 PR 描述里粘贴）
 
 ```markdown
-## 测试结果
+## Release Smoke Test (Quick)
 
 日期: ___________
+版本: ___________
 
-✅ 通过的测试:
-- [ ] TodoWriteTool
-- [ ] TaskCreateTool
-- [ ] TaskListTool
-- [ ] WebSearchTool
-- [ ] LSPTool
-- [ ] NotebookEditTool
-
-❌ 发现的问题:
-1. 
-2. 
-
-💡 改进建议:
-1. 
-2. 
-```
-
----
-
-## 🆘 遇到问题？
-
-### 编译错误
-```bash
-npm run build
-# 查看并修复错误
-```
-
-### 工具没有被调用
-- 确保描述清晰明确
-- 尝试换一种说法
-- 查看 Agent 的响应逻辑
-
-### 网络搜索失败
-- 检查网络连接
-- 这是正常现象（DuckDuckGo 可能需要代理）
-- 不影响其他工具的使用
-
-### 文件找不到
-- 使用绝对路径
-- 确认文件确实存在
-- 检查文件权限
-
----
-
-## 📞 需要帮助？
-
-参考以下文档：
-- 📘 `MANUAL_TEST_GUIDE.md` - 详细测试指南
-- 📗 `DEVELOPMENT_SUMMARY.md` - 开发总结
-- 📙 `dev.md` - 原始开发规划
-
----
-
-**准备好了吗？开始测试吧！** 🚀
-
-```bash
-./run-manual-tests.sh
+- [ ] pnpm build / pnpm test 通过
+- [ ] /permissions 可用
+- [ ] 默认拒绝敏感工具（BashTool/FileWriteTool 等）
+- [ ] /allow BashTool 后可正常执行
+- [ ] /provider -s 可切换并清空会话
+- [ ] Esc/Ctrl+C 可中断生成
+- [ ] （可选）MCP 启动时可注册工具
 ```

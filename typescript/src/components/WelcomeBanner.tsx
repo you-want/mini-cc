@@ -6,13 +6,14 @@ import * as configManager from '../utils/configManager';
 
 export function WelcomeBanner() {
   const userName = os.userInfo().username || process.env.USER || 'developer';
-  const modelName = configManager.getConfigValue('MODEL_NAME') || process.env.MODEL_NAME || 'qwen3.6-plus';
+  // 配置优先级：.env 文件 > 全局配置 > 默认值
+  const modelName = process.env.MODEL_NAME || configManager.getConfigValue('MODEL_NAME') || 'qwen3.6-plus';
   const cwd = process.cwd();
   const homedir = os.homedir();
   const displayCwd = cwd.startsWith(homedir) ? `~${cwd.slice(homedir.length)}` : cwd;
   
-  // 获取 Provider 以便展示
-  const provider = configManager.getConfigValue('PROVIDER') || process.env.PROVIDER || 'openai';
+  // 获取 Provider 以便展示（同样优先 .env 文件）
+  const provider = process.env.PROVIDER || configManager.getConfigValue('PROVIDER') || 'openai';
   const providerDisplay = provider === 'openai' ? 'OpenAI / Compatible' : 'Anthropic';
   
   // 简单获取版本号

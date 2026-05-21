@@ -36,16 +36,44 @@ export interface PermissionStrategy {
  * 正常情况下，执行高危工具时应该在这里拦截并询问用户。
  */
 export function createDefaultStrategy(): PermissionStrategy {
+  const SAFE_TOOLS = new Set<string>([
+    'FileReadTool',
+    'GlobTool',
+    'GrepTool',
+    'GitStatusTool',
+    'WebFetchTool',
+    'WebSearchTool',
+    'TodoWrite',
+    'TaskCreate',
+    'TaskList',
+    'LSPTool',
+  ]);
+
+  const SENSITIVE_TOOLS = new Set<string>([
+    'BashTool',
+    'FileWriteTool',
+    'FileEditTool',
+    'NotebookEdit',
+    'AgentTool',
+  ]);
+
   return {
     async check(toolName: string, args: any, context: PermissionContext): Promise<boolean> {
       // 检查白名单和黑名单
       if (context.allowedTools.has(toolName)) return true;
       if (context.deniedTools.has(toolName)) return false;
-      
-      // 在真实的终端应用中，这里会调用 readline 询问用户是否允许执行。
-      // 目前为了简化演示，模拟用户自动同意 (Auto-yes)
-      console.log(`[Permissions] (默认策略) 请求用户授权执行: ${toolName}`);
-      return true; 
+
+      if (SAFE_TOOLS.has(toolName)) {
+        return true;
+      }
+
+      if (SENSITIVE_TOOLS.has(toolName)) {
+        console.log(`[Permissions] (默认策略) 拒绝执行未预审批的敏感工具: ${toolName}`);
+        return false;
+      }
+
+      console.log(`[Permissions] (默认策略) 未知工具默认拒绝: ${toolName}`);
+      return false;
     }
   };
 }

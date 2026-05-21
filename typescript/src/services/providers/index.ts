@@ -23,19 +23,31 @@ export interface ProviderResponse {
  */
 export interface LLMProvider {
   /**
+   * 模型名称
+   */
+  modelName?: string;
+
+  /**
    * 发送用户消息给模型，并获取回复
    * @param userMessage 用户输入的文本
    * @param onTextResponse 实时流式处理文本回复的回调函数（支持区分思考过程 isThinking）
+   * @param abortSignal 可选。用于取消本次请求。
    */
-  sendMessage(userMessage: string, onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse>;
+  sendMessage(
+    userMessage: string,
+    onTextResponse: (text: string, isThinking?: boolean) => void,
+    abortSignal?: AbortSignal
+  ): Promise<ProviderResponse>;
 
   /**
    * 发送工具调用的执行结果给模型，并获取下一步指示
    * @param results 工具执行结果数组
    * @param onTextResponse 实时流式处理文本回复的回调函数
+   * @param abortSignal 可选。用于取消本次请求。
    */
   sendToolResults(
     results: { id: string; name: string; result: string; isError?: boolean }[],
-    onTextResponse: (text: string, isThinking?: boolean) => void
+    onTextResponse: (text: string, isThinking?: boolean) => void,
+    abortSignal?: AbortSignal
   ): Promise<ProviderResponse>;
 }

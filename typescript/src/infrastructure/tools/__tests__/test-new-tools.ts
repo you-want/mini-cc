@@ -21,7 +21,12 @@ const mockStateStore = createAppStateStore({
     mainLoopModel: 'openai',
   },
   tasks: {},
-  toolPermissionContext: {},
+  toolPermissionContext: {
+    strategy: 'auto' as const,
+    allowedTools: new Set(),
+    deniedTools: new Set(),
+  },
+  activeSkill: null,
 });
 
 // 创建模拟的工具上下文

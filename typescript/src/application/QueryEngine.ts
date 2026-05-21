@@ -10,6 +10,7 @@ import { globalAppState } from '../infrastructure/state/AppStateStore';
 import { globalPermissionManager } from '../infrastructure/permissions';
 // 引入 ToolUseContext 模块，用于定义工具调用的上下文
 import { ToolUseContext } from '../infrastructure/tools/Tool';
+import { readConfig } from '../utils/configManager';
 
 /**
  * 智能体（Agent）接口定义
@@ -26,28 +27,85 @@ export interface Agent {
  * @param provider 注入的大模型服务提供商 (Dependency Injection)
  */
 export function createAgent(provider: LLMProvider): Agent {
+  const parseToolList = (val: unknown): string[] => {
+    if (!val) return [];
+    if (Array.isArray(val)) {
+      return val.map(v => String(v)).map(v => v.trim()).filter(Boolean);
+    }
+    return String(val)
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+  };
+
+  const getHardDenyTools = (): Set<string> => {
+    const cfg = readConfig();
+    const fromEnv = parseToolList(process.env.HARD_DENY_TOOLS);
+    const fromConfig = parseToolList(cfg.HARD_DENY_TOOLS);
+    return new Set([...fromEnv, ...fromConfig]);
+  };
+
+  const createAbortPromise = <T = never>(abortSignal?: AbortSignal): Promise<T> => {
+    if (!abortSignal) return new Promise<T>(() => {});
+    if (abortSignal.aborted) return Promise.reject(new Error('aborted'));
+    return new Promise<T>((_, reject) => {
+      abortSignal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+    });
+  };
+
+  const withTimeout = async <T>(
+    promise: Promise<T>,
+    ms: number,
+    label: string,
+    abortSignal?: AbortSignal
+  ): Promise<T> => {
+    if (!Number.isFinite(ms) || ms <= 0) return promise;
+    let timeoutId: NodeJS.Timeout | null = null;
+    const timeoutPromise = new Promise<T>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error(`timeout: ${label} exceeded ${ms}ms`));
+      }, ms);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise, createAbortPromise<T>(abortSignal)]);
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+  };
   
   /**
    * 处理大模型返回的工具调用请求
    */
   const handleToolCalls = async (
-    toolCalls: ToolCall[]
+    toolCalls: ToolCall[],
+    abortSignal?: AbortSignal
   ): Promise<{ id: string; name: string; result: string; isError: boolean }[]> => {
     const results: { id: string; name: string; result: string; isError: boolean }[] = [];
 
     // 依赖注入 (Dependency Injection): 构造 ToolUseContext 上下文对象
     // 工具的执行不再依赖全局模块，而是通过 context 获取运行时的状态、权限和工作目录
+    const hardDenyTools = getHardDenyTools();
+    const permissionContextFromState = globalAppState.getState().toolPermissionContext;
     const context: ToolUseContext = {
       stateStore: globalAppState,
       permissionContext: {
-        strategy: 'default',
-        allowedTools: new Set(),
-        deniedTools: new Set(),
+        strategy: permissionContextFromState.strategy,
+        allowedTools: new Set<string>(permissionContextFromState.allowedTools as any),
+        deniedTools: new Set<string>(permissionContextFromState.deniedTools as any),
       },
       workspaceDir: process.cwd(),
     };
 
     for (const call of toolCalls) {
+      if (abortSignal?.aborted) {
+        results.push({
+          id: call.id,
+          name: call.name,
+          result: `任务已取消：跳过工具 ${call.name} 的执行。`,
+          isError: true,
+        });
+        continue;
+      }
       // 检查大模型生成的 JSON 参数是否解析失败（如：忘记转义）
       if (call.args && call.args._parse_error) {
         results.push({
@@ -74,13 +132,40 @@ export function createAgent(provider: LLMProvider): Agent {
       }
 
       try {
+        if (hardDenyTools.has(call.name)) {
+          results.push({
+            id: call.id,
+            name: call.name,
+            result: `权限拒绝：工具 ${call.name} 被 hard_deny 规则禁止执行。`,
+            isError: true,
+          });
+          continue;
+        }
+
+        const isAllowed = await globalPermissionManager.requestPermission(call.name, call.args, context.permissionContext);
+        if (!isAllowed) {
+          results.push({
+            id: call.id,
+            name: call.name,
+            result: `权限拒绝：当前会话未授权执行工具 ${call.name}。\n你可以在命令模式中输入：/allow ${call.name}\n或使用 /permissions 查看当前授权列表。`,
+            isError: true,
+          });
+          continue;
+        }
+
         // 事件驱动 (Event-Driven): 触发 PreToolUse 钩子，可以在工具执行前拦截或记录日志
         await globalHooks.trigger('PreToolUse', { toolName: call.name, args: call.args });
         
         console.log(`\x1b[36m▶ [Agent] 正在调用工具: ${call.name} ...\x1b[0m`);
         
         // 依赖注入模式执行工具：传入解析好的参数和上下文环境
-        let rawResult = await tool.execute(call.args, context);
+        const timeoutMs = call.name === 'BashTool' ? 300_000 : 120_000;
+        let rawResult: any = await withTimeout(
+          Promise.resolve(tool.execute(call.args, context)) as Promise<any>,
+          timeoutMs,
+          `tool ${call.name}`,
+          abortSignal
+        );
         console.log(`\x1b[32m✔ [Agent] 工具 ${call.name} 执行完毕。\x1b[0m`);
         
         // 将对象类型的结果序列化为字符串（新工具返回结构化数据）
@@ -144,6 +229,15 @@ export function createAgent(provider: LLMProvider): Agent {
           isError: false,
         });
       } catch (error: any) {
+        if (error?.message === 'aborted') {
+          results.push({
+            id: call.id,
+            name: call.name,
+            result: `任务已取消：工具 ${call.name} 未执行或已中断。`,
+            isError: true,
+          });
+          continue;
+        }
         results.push({
           id: call.id,
           name: call.name,
@@ -166,10 +260,14 @@ export function createAgent(provider: LLMProvider): Agent {
       // 可以在发给大模型前，强制注入自定义指令 (如：用中文回答并保持幽默)
       // ------------------------------------------------------------------------
       const myCustomPrompt = "\n\n【系统拦截器注入】：接下来的回复，请尽量使用中文，并用幽默的口吻！";
-      const hackedUserMessage = userMessage + myCustomPrompt;
+      const activeSkill = globalAppState.getState().activeSkill;
+      const skillPrompt = activeSkill?.prompt
+        ? `\n\n【技能系统注入：${activeSkill.name}】\n${activeSkill.prompt}`
+        : '';
+      const hackedUserMessage = userMessage + myCustomPrompt + skillPrompt;
 
       // 1. 将用户的消息发送给大模型
-      let response = await provider.sendMessage(hackedUserMessage, onTextResponse);
+      let response = await provider.sendMessage(hackedUserMessage, onTextResponse, abortSignal);
 
       let loopCount = 0;
       const maxLoops = 3; // 限制最大连续工具调用轮数，防止 AI 陷入死循环
@@ -201,7 +299,7 @@ export function createAgent(provider: LLMProvider): Agent {
         // 即大模型边生成参数 JSON，引擎边解析，拿到足够参数立刻执行，不等大模型说完！
         // 这里是简化版实现：等大模型全回复完再执行 handleToolCalls。
         // ------------------------------------------------------------------------
-        const toolResults = await handleToolCalls(response.toolCalls);
+        const toolResults = await handleToolCalls(response.toolCalls, abortSignal);
         
         console.log(`\n\x1b[33m[Agent] 工具执行完毕，正在将结果发送回大模型，请稍候...\x1b[0m\n`);
         
@@ -212,7 +310,7 @@ export function createAgent(provider: LLMProvider): Agent {
         // ------------------------------------------------------------------------
         
         // 3. 将工具执行的结果发回给大模型，获取下一步指示或最终文本回复
-        response = await provider.sendToolResults(toolResults, onTextResponse);
+        response = await provider.sendToolResults(toolResults, onTextResponse, abortSignal);
       }
     } catch (error: any) {
       console.error(`\n[Agent 报错] ${error.message}`);

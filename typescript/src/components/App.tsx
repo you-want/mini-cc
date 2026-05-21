@@ -5,6 +5,7 @@ import { Text } from '../ink/components/Text';
 import TextInputModule from 'ink-text-input';
 import { VirtualMessageList } from './VirtualMessageList';
 import { WelcomeBanner } from './WelcomeBanner';
+import { globalAppState } from '../infrastructure/state/AppStateStore';
 
 
 // 兼容 Bun 打包后的 CommonJS 导出格式
@@ -14,15 +15,18 @@ interface AppProps {
   agent: any;
   onExit: () => void;
   onClear: () => void;
+  onSwitchProvider: (provider: any) => void;
   initialInput?: string;
 }
 
-export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
+export function App({ agent, onExit, onClear, onSwitchProvider, initialInput = '' }: AppProps) {
   // 我们将默认的欢迎语移除，因为现在有了炫酷的顶部 WelcomeBanner
   const [messages, setMessages] = useState<Array<{ id: string; content: string }>>([]);
   const [welcome] = useState([{ id: 'welcome-banner' }]);
   const [input, setInput] = useState(initialInput);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSkillName, setActiveSkillName] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // 语音模式状态
   const [isVoiceMode, setIsVoiceMode] = useState(false);
@@ -80,54 +84,71 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
     }
   }, { isActive: isVoiceMode });
 
+  useInput((inputChar, key) => {
+    if (isLoading && (key.escape || (inputChar === 'c' && key.ctrl))) {
+      abortRef.current?.abort();
+      setIsLoading(false);
+      setMessages(prev => [
+        ...prev,
+        { id: `abort-${Date.now()}`, content: '[系统]: 已中断当前请求' }
+      ]);
+      return;
+    }
+
+    if (!isLoading && (inputChar === 'c' && key.ctrl)) {
+      onExit();
+    }
+  });
+
   const handleSubmit = async (query: string) => {
     if (!query.trim() || isLoading) return;
 
-    const lowerQuery = query.trim().toLowerCase();
+    const trimmedQuery = query.trim();
     
     // 处理特殊指令
-    if (lowerQuery === 'exit' || lowerQuery === 'quit') {
+    if (trimmedQuery === 'exit' || trimmedQuery === 'quit') {
       onExit();
       return;
     }
     
-    if (lowerQuery === '/clear') {
-      setMessages([{ id: Date.now().toString(), content: '✓ 对话历史已清空。' }]);
-      setInput('');
-      onClear();
-      return;
-    }
-
-    if (lowerQuery.startsWith('/buddy')) {
-      const buddyModule = require('../buddy/companion');
-      const args = query.trim().split(/\s+/);
-      // 支持自定义种子，如果没有提供则使用系统用户名或默认值
-      const seed = args.length > 1 ? args[1] : (process.env.USER || 'default_user');
-      const bones = buddyModule.generateBones(seed);
+    // 使用统一的命令拦截器处理所有 / 开头的命令
+    if (trimmedQuery.startsWith('/')) {
+      const { interceptCommand } = require('../commands/CommandInterceptor');
+      const result = await interceptCommand(trimmedQuery);
       
-      const speciesName = bones.species === 'duck' ? '🦆 小黄鸭 (Duck)' : '🐙 小章鱼 (Octopus)';
-      const shinyText = bones.shiny ? '✨ 是 (Shiny!)' : '否';
-      const statsText = Object.entries(bones.stats).map(([k, v]) => `${k}: ${v}`).join(' | ');
-      
-      setMessages(prev => [
-        ...prev, 
-        { id: `buddy-${Date.now()}`, content: `🐾 宠物: ${speciesName}\n🎭 稀有度: ${bones.rarity}\n✨ 闪光: ${shinyText}\n📊 属性: ${statsText}` }
-      ]);
-      setInput('');
-      return;
-    }
+      if (result.intercepted && result.output) {
+        if (result.action?.type === 'clear') {
+          setMessages([]);
+          setIsLoading(false);
+          onClear();
+        }
 
-    if (lowerQuery === '/voice') {
-      const { triggerVoiceMode } = require('../commands/voice');
-      triggerVoiceMode().then((msg: string) => {
+        if (result.action?.type === 'switchProvider') {
+          setMessages([]);
+          setIsLoading(false);
+          onSwitchProvider(result.action.provider);
+        }
+
+        if (result.action?.type === 'activateSkill') {
+          setActiveSkillName(result.action.skillName);
+          globalAppState.setState({
+            activeSkill: { name: result.action.skillName, prompt: result.action.prompt },
+          });
+        }
+
         setMessages(prev => [
-          ...prev, 
-          { id: `voice-${Date.now()}`, content: msg }
+          ...prev,
+          { id: `cmd-${Date.now()}`, content: result.output }
         ]);
-        setIsVoiceMode(true);
-      });
-      setInput('');
-      return;
+        setInput('');
+        
+        // 如果是 /voice 命令，启动语音模式
+        if (trimmedQuery === '/voice') {
+          setIsVoiceMode(true);
+        }
+        
+        return;
+      }
     }
 
     // 用户消息
@@ -141,8 +162,11 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
     setMessages(prev => [...prev, { id: aiMsgId, content: `[mini-cc]: ` }]);
 
     try {
+      const abortController = new AbortController();
+      abortRef.current = abortController;
       // 真实对接底层大模型
       await agent.chat(query, (textChunk: string, isThinking?: boolean) => {
+        if (abortController.signal.aborted) return;
         setMessages(prev => {
           const newMsgs = [...prev];
           const lastMsg = newMsgs[newMsgs.length - 1];
@@ -152,7 +176,7 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
           }
           return newMsgs;
         });
-      });
+      }, abortController.signal);
     } catch (err: any) {
       setMessages(prev => [
         ...prev,
@@ -160,6 +184,7 @@ export function App({ agent, onExit, onClear, initialInput = '' }: AppProps) {
 详细信息: ${err.message}` }
       ]);
     } finally {
+      abortRef.current = null;
       setIsLoading(false);
     }
   };

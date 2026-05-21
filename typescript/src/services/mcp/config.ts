@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 // 引入 MCP 插件配置接口
 import { loadPluginMcpServers, McpServerConfig } from '../../utils/plugins/mcpPluginIntegration';
+import { createMcpClient, McpClientInstance } from './client';
+import { createMcpTool } from '../../tools/MCPTool/MCPTool';
+import { registerTool } from '../../infrastructure/tools';
 
 /**
  * 聚合用户和项目的 MCP 配置
@@ -51,4 +54,62 @@ export function getMergedMcpConfig(workspaceDir: string): Record<string, McpServ
   }
 
   return mergedServers;
+}
+
+export interface McpInitResult {
+  connectedServers: string[];
+  registeredTools: number;
+  errors: string[];
+  disconnect: () => Promise<void>;
+}
+
+export async function initializeMcpTools(workspaceDir: string): Promise<McpInitResult> {
+  const servers = getMergedMcpConfig(workspaceDir);
+  const connectedServers: string[] = [];
+  const errors: string[] = [];
+  let registeredTools = 0;
+
+  const clients: McpClientInstance[] = [];
+
+  const serverEntries = Object.entries(servers);
+  for (const [serverName, serverConfig] of serverEntries) {
+    try {
+      const client = createMcpClient(serverName, serverConfig);
+      await client.connect();
+      clients.push(client);
+      connectedServers.push(serverName);
+
+      let cursor: string | undefined = undefined;
+      do {
+        const listResult: any = await (client.client as any).listTools(cursor ? { cursor } : {});
+        const toolDefs: any[] = listResult?.tools || [];
+
+        for (const toolDef of toolDefs) {
+          const normalized = {
+            ...toolDef,
+            inputSchema: toolDef.inputSchema ?? toolDef.input_schema ?? toolDef.parameters ?? {
+              type: 'object',
+              properties: {},
+            },
+          };
+          const proxyTool = createMcpTool(serverName, client, normalized);
+          registerTool(proxyTool);
+          registeredTools += 1;
+        }
+
+        cursor = listResult?.nextCursor;
+      } while (cursor);
+    } catch (e: any) {
+      errors.push(`[MCP] ${serverName}: ${e?.message || String(e)}`);
+    }
+  }
+
+  return {
+    connectedServers,
+    registeredTools,
+    errors,
+    disconnect: async () => {
+      await Promise.allSettled(clients.map(c => c.disconnect()));
+    },
+  };
 }

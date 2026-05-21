@@ -35,21 +35,29 @@ export function createAnthropicProvider(apiKey: string, model: string = 'claude-
    * 
    * @param onTextResponse 流式回调函数，将收到的文字实时推送到终端
    */
-  const createMessage = async (onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+  const createMessage = async (
+    onTextResponse: (text: string, isThinking?: boolean) => void,
+    abortSignal?: AbortSignal
+  ): Promise<ProviderResponse> => {
     // 发起流式请求
-    const stream = await anthropic.messages.stream({
+    const params: any = {
       model,
       max_tokens: 4096, // 设置生成内容的最大 token 数
       tools: getTools(),
       messages,
       system: systemPrompt,
-    });
+    };
+    if (abortSignal) {
+      params.signal = abortSignal;
+    }
+    const stream = await anthropic.messages.stream(params);
 
     let fullContent = '';
     let isContentStarted = false;
 
     // 监听文本块的生成，实现流式打字机效果
     stream.on('text', (textDelta: string) => {
+      if (abortSignal?.aborted) return;
       if (!isContentStarted) {
         onTextResponse('\n' + '='.repeat(20) + ' 模型回复 ' + '='.repeat(20) + '\n', false);
         isContentStarted = true;
@@ -97,12 +105,20 @@ export function createAnthropicProvider(apiKey: string, model: string = 'claude-
   };
 
   return {
-    sendMessage: async (userMessage: string, onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+    sendMessage: async (
+      userMessage: string,
+      onTextResponse: (text: string, isThinking?: boolean) => void,
+      abortSignal?: AbortSignal
+    ): Promise<ProviderResponse> => {
       // 追加用户的提问到上下文中
       messages.push({ role: 'user', content: userMessage });
-      return createMessage(onTextResponse);
+      return createMessage(onTextResponse, abortSignal);
     },
-    sendToolResults: async (results: { id: string; name: string; result: string; isError?: boolean }[], onTextResponse: (text: string, isThinking?: boolean) => void): Promise<ProviderResponse> => {
+    sendToolResults: async (
+      results: { id: string; name: string; result: string; isError?: boolean }[],
+      onTextResponse: (text: string, isThinking?: boolean) => void,
+      abortSignal?: AbortSignal
+    ): Promise<ProviderResponse> => {
       // 将工具的执行结果封装为 Anthropic 要求的 tool_result 块
       const toolResultBlocks: Anthropic.Messages.ToolResultBlockParam[] = results.map(r => ({
         type: 'tool_result',
@@ -112,7 +128,7 @@ export function createAnthropicProvider(apiKey: string, model: string = 'claude-
       }));
 
       messages.push({ role: 'user', content: toolResultBlocks });
-      return createMessage(onTextResponse);
+      return createMessage(onTextResponse, abortSignal);
     }
   };
 }

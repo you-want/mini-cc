@@ -14,6 +14,7 @@ export { webSearchTool } from './WebSearchTool';
 export { lspTool } from './LSPTool';
 export { notebookEditTool } from './NotebookEditTool';
 
+import type { Tool } from './Tool';
 import { bashTool } from './BashTool';
 import { fileReadTool } from './FileReadTool';
 import { fileWriteTool } from './FileWriteTool';
@@ -43,7 +44,7 @@ import { notebookEditTool } from './NotebookEditTool';
  * - Notebook：notebookEditTool
  * - 高级功能：agentTool (Agent 分身术)
  */
-export const tools = [
+export const tools: Tool<any, any>[] = [
   // 基础工具
   bashTool,
   fileReadTool,
@@ -67,3 +68,11 @@ export const tools = [
   // 高级工具
   agentTool,
 ];
+
+export function registerTool(tool: Tool<any, any>): void {
+  tools.push(tool);
+}
+
+export function registerTools(newTools: Tool<any, any>[]): void {
+  tools.push(...newTools);
+}
