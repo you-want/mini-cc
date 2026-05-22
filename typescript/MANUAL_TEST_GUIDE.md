@@ -21,7 +21,7 @@ pnpm test
 pnpm start
 ```
 
-（截图占位：启动欢迎页 / WelcomeBanner）
+![启动欢迎页](./assets/mcp.png)
 
 ---
 
@@ -45,7 +45,7 @@ pnpm start
 再输入：`请用 BashTool 执行 echo hello`  
 预期：再次被拒绝
 
-（截图占位：权限拒绝提示 + /allow 授权 + /deny 禁止）
+![权限拒绝提示](./assets/permissions.png)
 
 **✅ 验证点**
 - [ ] 默认拒绝敏感工具（BashTool/FileWriteTool/FileEditTool/AgentTool/NotebookEdit）
@@ -64,7 +64,7 @@ pnpm start
 2) 输入：`/provider openai -s` 或 `/provider anthropic -s`  
 预期：提示“已切换”，并清空会话（历史消息归零）
 
-（截图占位：/provider 列表与切换成功提示）
+![切换 provider](./assets/permissions.png)
 
 **✅ 验证点**
 - [ ] 会话级切换成功（无需重启）

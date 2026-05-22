@@ -12,7 +12,7 @@
 
 - N/A
 
-## [1.1.0] - 2026-05-21
+## [1.1.2] - 2026-05-22
 
 ### 新增
 
@@ -39,14 +39,13 @@
   - LSPTool（简化实现：symbols/definition/references/hover）
   - NotebookEditTool（.ipynb 读/增/改/删 cell）
   - 支持标准 glob 语法（`*`, `**`, `?`, `[abc]`）
+
 ### 改进
 
 - 工具注册机制支持运行时动态注册（为 MCP 动态工具加载提供基础）
 - Jest 配置更贴近生产（忽略 dist、自测脚本不再误判为测试用例）
 
 ### 初始版本
-
-- 基础 Agent 循环实现
 
 - 基础 Agent 循环实现
 - 核心工具集：

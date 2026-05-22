@@ -35,7 +35,7 @@ npm test
 
 1. 编译项目：
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 npm run build
 ```
 

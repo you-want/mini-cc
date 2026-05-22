@@ -111,7 +111,7 @@ Provider 热切换功能允许用户在运行时动态切换 LLM Provider，无�
 
 1. 确保已编译项目：
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 npm run build
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "@you-want/mini-cc",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "A lightweight AI coding agent built with TypeScript, supporting multiple LLMs (Anthropic, Qwen, DeepSeek, etc.)",
   "main": "dist/cli.js",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "files": [
     "dist",
+    "scripts",
     "package.json",
     "README.md",
     "LICENSE"
@@ -25,7 +26,7 @@
   "author": "Rain9",
   "license": "MIT",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
+    "preinstall": "node -e \"try{require('./scripts/preinstall.js')}catch(e){process.exit(0)}\"",
     "build": "tsc",
     "build:bun": "bun build ./src/cli.ts --compile --outfile=bin/mini-cc",
     "start": "node dist/cli.js",

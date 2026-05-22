@@ -19,7 +19,7 @@
 ### 方式 1: 运行自动化测试（推荐首先执行）
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 ./run-automated-tests.sh
 ```
 
@@ -31,7 +31,7 @@ cd /Users/rain9/github/claude-code/mini-cc/typescript
 ### 方式 2: 准备手动测试环境
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 ./run-manual-tests.sh
 ```
 
@@ -44,7 +44,7 @@ cd /Users/rain9/github/claude-code/mini-cc/typescript
 ### 方式 3: 直接启动 mini-cc 进行手动测试
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 npm dev    # 开发模式
 ```
 

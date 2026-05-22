@@ -22,7 +22,7 @@
 1. 启动 mini-cc：
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 npm start
 ```
 
@@ -133,7 +133,7 @@ const y = 20;
 如果你只想快速验证编译是否成功：
 
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /mini-cc/typescript
 npm run build
 ```
 

@@ -66,8 +66,8 @@ export async function startApp(prefetchConfig: any) {
   const skillManager = SkillManager.getInstance();
   skillManager.loadBuiltInSkills();
   const userSkillsDir = path.join(process.env.HOME || '', '.mini-cc', 'skills');
-  const projectSkillsDir = path.join(process.cwd(), '.mini-cc', 'skills');
   skillManager.loadUserSkills(userSkillsDir);
+  const projectSkillsDir = path.join(process.cwd(), '.mini-cc', 'skills');
   skillManager.loadUserSkills(projectSkillsDir);
   console.log(`[SkillManager] 已加载 ${skillManager.getStats().total} 个技能（含内置与自定义）`);
 

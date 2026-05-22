@@ -2,11 +2,12 @@
 
 ## 📋 开发概览
 
-根据 `/Users/rain9/github/claude-code/mini-cc/typescript/dev.md` 开发文档，本次开发完成了阶段一和阶段二的核心工具实现。
+根据 `dev.md` 开发文档，本次开发完成了阶段一和阶段二的核心工具实现。
 
 ## ✅ 已完成的工作
 
 ### 1. TodoWriteTool - 任务管理工具
+
 **文件**: `src/infrastructure/tools/TodoWriteTool.ts`
 
 **功能**:
@@ -25,6 +26,7 @@
 ---
 
 ### 2. TaskCreateTool - 任务创建工具
+
 **文件**: `src/infrastructure/tools/TaskCreateTool.ts`
 
 **功能**:
@@ -43,6 +45,7 @@
 ---
 
 ### 3. TaskListTool - 任务列表工具
+
 **文件**: `src/infrastructure/tools/TaskListTool.ts`
 
 **功能**:
@@ -60,6 +63,7 @@
 ---
 
 ### 4. WebSearchTool - 网络搜索工具
+
 **文件**: `src/infrastructure/tools/WebSearchTool.ts`
 
 **功能**:
@@ -80,6 +84,7 @@
 ---
 
 ### 5. LSPTool - 语言服务器协议工具（简化版）
+
 **文件**: `src/infrastructure/tools/LSPTool.ts`
 
 **功能**:
@@ -104,6 +109,7 @@
 ---
 
 ### 6. NotebookEditTool - Jupyter Notebook 编辑工具
+
 **文件**: `src/infrastructure/tools/NotebookEditTool.ts`
 
 **功能**:
@@ -147,6 +153,7 @@
 ## 🔧 技术实现细节
 
 ### 1. 工具接口统一
+
 所有工具都实现了统一的 `Tool` 接口：
 ```typescript
 interface Tool<Input, Output> {
@@ -158,16 +165,19 @@ interface Tool<Input, Output> {
 ```
 
 ### 2. 状态管理
+
 - 使用 `AppStateStore` 进行全局状态管理
 - 采用观察者模式，支持状态订阅和更新
 - Task 工具使用 `tasks` 字段存储任务状态
 
 ### 3. 错误处理
+
 - 所有工具都有完善的输入验证
 - 统一的错误消息格式
 - 友好的错误提示
 
 ### 4. 文档完善
+
 每个工具都包含：
 - 详细的功能描述
 - 使用场景说明
@@ -200,12 +210,14 @@ src/infrastructure/tools/
 根据 `dev.md` 的要求，本次开发完成了：
 
 ### 阶段一：核心工具补全 ✅
+
 - [x] GlobTool (之前已完成)
 - [x] GrepTool (之前已完成)
 - [x] FileEditTool (之前已完成)
 - [x] WebFetchTool (之前已完成)
 
 ### 阶段二：新增工具 ✅
+
 - [x] TodoWriteTool - 任务管理
 - [x] TaskCreateTool/TaskListTool - 后台任务管理
 - [x] WebSearchTool - 搜索引擎集成
