@@ -1,11 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useInput, Static } from 'ink';
 import { Box } from '../ink/components/Box';
 import { Text } from '../ink/components/Text';
 import TextInputModule from 'ink-text-input';
 import { VirtualMessageList } from './VirtualMessageList';
 import { WelcomeBanner } from './WelcomeBanner';
+import { CommandSuggestions, CommandSuggestion } from './CommandSuggestions';
 import { globalAppState } from '../infrastructure/state/AppStateStore';
+import { CommandCompletionManager } from '../commands/CommandCompletionManager';
 
 
 // 兼容 Bun 打包后的 CommonJS 导出格式
@@ -28,11 +30,58 @@ export function App({ agent, onExit, onClear, onSwitchProvider, initialInput = '
   const [activeSkillName, setActiveSkillName] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // 命令补全状态
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<CommandSuggestion[]>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const completionManagerRef = useRef<CommandCompletionManager | null>(null);
+
   // 语音模式状态
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDots, setRecordingDots] = useState('');
   const releaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 初始化命令补全管理器
+  useEffect(() => {
+    completionManagerRef.current = CommandCompletionManager.getInstance();
+  }, []);
+
+  // 处理命令补全的键盘导航
+  useInput((inputChar, key) => {
+    if (!showSuggestions || isLoading || isVoiceMode) return;
+
+    if (key.upArrow) {
+      setSelectedSuggestionIndex(prev => 
+        prev > 0 ? prev - 1 : suggestions.length - 1
+      );
+    } else if (key.downArrow) {
+      setSelectedSuggestionIndex(prev => 
+        prev < suggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (key.tab) {
+      if (suggestions.length > 0) {
+        const selected = suggestions[selectedSuggestionIndex];
+        setInput(selected.fullCommand || selected.command);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(0);
+      }
+    } else if (key.return) {
+      if (suggestions.length > 0) {
+        const selected = suggestions[selectedSuggestionIndex];
+        const selectedCommand = selected.fullCommand || selected.command;
+        
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(0);
+        setInput('');
+        
+        handleSubmit(selectedCommand);
+      }
+    } else if (key.escape) {
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(0);
+    }
+  }, { isActive: showSuggestions && !isLoading && !isVoiceMode });
 
   // 处理语音模式按键
   useInput((inputChar, key) => {
@@ -99,6 +148,24 @@ export function App({ agent, onExit, onClear, onSwitchProvider, initialInput = '
       onExit();
     }
   });
+
+  // 监听输入变化，更新命令补全建议
+  useEffect(() => {
+    if (!completionManagerRef.current) return;
+
+    const trimmedInput = input.trim();
+    
+    if (trimmedInput.startsWith('/') && !isLoading && !isVoiceMode) {
+      const newSuggestions = completionManagerRef.current.getAllSuggestions(trimmedInput);
+      setSuggestions(newSuggestions);
+      setShowSuggestions(newSuggestions.length > 0);
+      setSelectedSuggestionIndex(0);
+    } else {
+      setShowSuggestions(false);
+      setSuggestions([]);
+      setSelectedSuggestionIndex(0);
+    }
+  }, [input, isLoading, isVoiceMode]);
 
   const handleSubmit = async (query: string) => {
     if (!query.trim() || isLoading) return;
@@ -201,6 +268,13 @@ export function App({ agent, onExit, onClear, onSwitchProvider, initialInput = '
         <VirtualMessageList messages={messages} columns={80} />
       </Box>
 
+      {/* 命令补全建议 */}
+      <CommandSuggestions
+        suggestions={suggestions}
+        selectedIndex={selectedSuggestionIndex}
+        visible={showSuggestions}
+      />
+
       {/* 底部交互区：框线包裹的输入框和操作提示 */}
       <Box flexDirection="column" marginTop={1}>
         <Box borderStyle="round" borderColor="dim" paddingX={1} width="100%">
@@ -222,7 +296,7 @@ export function App({ agent, onExit, onClear, onSwitchProvider, initialInput = '
                   setInput(newVal);
                 }
               }}
-              onSubmit={handleSubmit}
+              onSubmit={showSuggestions ? () => {} : handleSubmit}
               placeholder="Ask anything..."
             />
           )}
