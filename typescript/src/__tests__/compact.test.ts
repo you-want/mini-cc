@@ -83,7 +83,8 @@ describe('Compact 模块', () => {
     it('应该保留至少一条消息', () => {
       const messages: Message[] = [
         { role: 'user', content: 'First' },
-        { role: 'assistant', content: 'Response' },
+        { role: 'assistant', content: 'Response1' },
+        { role: 'user', content: 'Second' },
       ];
       const result = truncateHeadForPTLRetry(messages, { error: { message: 'maximum context length exceeded' } });
       expect(result).not.toBeNull();
