@@ -17,7 +17,7 @@ describe('WebFetchTool', () => {
       { url: 'invalid-url' },
       context
     );
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('无效的 URL 格式');
   });
@@ -27,7 +27,7 @@ describe('WebFetchTool', () => {
       { url: 'ftp://example.com' },
       context
     );
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('不支持的协议');
   });
@@ -37,33 +37,26 @@ describe('WebFetchTool', () => {
       { url: '' },
       context
     );
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('url 参数不能为空');
   });
 
-  test('应该设置默认 User-Agent', async () => {
+  test('应该拒绝 localhost', async () => {
     const result = await webFetchTool.execute(
-      { url: 'https://httpbin.org/user-agent' },
+      { url: 'http://localhost:8080' },
       context
     );
-    
-    if (result.success && result.body) {
-      expect(result.body).toContain('mini-cc');
-    }
-  }, 10000);
 
-  test('应该支持自定义请求头', async () => {
+    expect(result.success).toBe(false);
+  });
+
+  test('应该拒绝 127.0.0.1', async () => {
     const result = await webFetchTool.execute(
-      {
-        url: 'https://httpbin.org/headers',
-        headers: { 'X-Custom-Header': 'test-value' },
-      },
+      { url: 'http://127.0.0.1:8080' },
       context
     );
-    
-    if (result.success && result.body) {
-      expect(result.body).toContain('X-Custom-Header');
-    }
-  }, 10000);
+
+    expect(result.success).toBe(false);
+  });
 });
