@@ -17,8 +17,7 @@ export interface Block {
 }
 
 export interface Message {
-  type?: 'user' | 'assistant' | 'system' | 'tool';
-  role?: 'user' | 'assistant' | 'system' | 'tool';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string | Block[];
   uuid?: string;
   [key: string]: any;
@@ -38,9 +37,7 @@ const MAX_PTL_RETRIES = 3;
  */
 export function stripImagesFromMessages(messages: Message[]): Message[] {
   return messages.map(message => {
-    const role = message.role || message.type;
-    
-    if (role !== 'user' || !Array.isArray(message.content)) {
+    if (message.role !== 'user' || !Array.isArray(message.content)) {
       return message;
     }
 
@@ -168,13 +165,12 @@ async function generateSummary(messages: Message[], prompt: string): Promise<str
   const keyPoints: string[] = [];
   
   for (const message of messages) {
-    const role = message.role || message.type;
     const content = typeof message.content === 'string' 
       ? message.content 
       : message.content.map(b => b.text || '').join(' ');
     
     if (content.length > 50) {
-      keyPoints.push(`[${role}] ${content.slice(0, 200)}...`);
+      keyPoints.push(`[${message.role}] ${content.slice(0, 200)}...`);
     }
   }
   

@@ -19,7 +19,7 @@ describe('Compact 模块', () => {
     it('应该将图片块替换为占位符', () => {
       const messages: Message[] = [
         {
-          type: 'user',
+          role: 'user',
           content: [
             { type: 'image', source: { data: 'base64...' } },
             { type: 'text', text: '描述图片' },
@@ -33,7 +33,7 @@ describe('Compact 模块', () => {
     it('应该将文档块替换为占位符', () => {
       const messages: Message[] = [
         {
-          type: 'user',
+          role: 'user',
           content: [
             { type: 'document', source: { data: 'pdf...' } },
             { type: 'text', text: '描述文档' },
@@ -47,7 +47,7 @@ describe('Compact 模块', () => {
     it('应该保留非媒体内容不变', () => {
       const messages: Message[] = [
         {
-          type: 'user',
+          role: 'user',
           content: [{ type: 'text', text: '普通文本消息' }],
         },
       ];
@@ -58,7 +58,7 @@ describe('Compact 模块', () => {
     it('应该处理非 user 角色的消息', () => {
       const messages: Message[] = [
         {
-          type: 'assistant',
+          role: 'assistant',
           content: [{ type: 'image', source: { data: 'base64...' } }],
         },
       ];
@@ -70,10 +70,10 @@ describe('Compact 模块', () => {
   describe('truncateHeadForPTLRetry', () => {
     it('应该丢弃头部消息', () => {
       const messages: Message[] = [
-        { type: 'system', content: 'System' },
-        { type: 'user', content: 'First' },
-        { type: 'assistant', content: 'Response1' },
-        { type: 'user', content: 'Second' },
+        { role: 'system', content: 'System' },
+        { role: 'user', content: 'First' },
+        { role: 'assistant', content: 'Response1' },
+        { role: 'user', content: 'Second' },
       ];
       const result = truncateHeadForPTLRetry(messages, { error: { message: 'maximum context length exceeded by 1000 tokens' } });
       expect(result).not.toBeNull();
@@ -82,8 +82,8 @@ describe('Compact 模块', () => {
 
     it('应该保留至少一条消息', () => {
       const messages: Message[] = [
-        { type: 'user', content: 'First' },
-        { type: 'assistant', content: 'Response' },
+        { role: 'user', content: 'First' },
+        { role: 'assistant', content: 'Response' },
       ];
       const result = truncateHeadForPTLRetry(messages, { error: { message: 'maximum context length exceeded' } });
       expect(result).not.toBeNull();
@@ -91,7 +91,7 @@ describe('Compact 模块', () => {
     });
 
     it('应该返回 null 当消息太少', () => {
-      const messages: Message[] = [{ type: 'user', content: 'Only one' }];
+      const messages: Message[] = [{ role: 'user', content: 'Only one' }];
       const result = truncateHeadForPTLRetry(messages, { error: { message: 'maximum context length exceeded' } });
       expect(result).toBeNull();
     });
@@ -100,10 +100,10 @@ describe('Compact 模块', () => {
   describe('groupMessagesByApiRound', () => {
     it('应该按用户消息分组', () => {
       const messages: GroupedMessage[] = [
-        { type: 'user', content: 'First question' },
-        { type: 'assistant', content: 'First response' },
-        { type: 'user', content: 'Second question' },
-        { type: 'assistant', content: 'Second response' },
+        { role: 'user', content: 'First question' },
+        { role: 'assistant', content: 'First response' },
+        { role: 'user', content: 'Second question' },
+        { role: 'assistant', content: 'Second response' },
       ];
       const groups = groupMessagesByApiRound(messages);
       expect(groups.length).toBe(2);
@@ -113,7 +113,7 @@ describe('Compact 模块', () => {
 
     it('应该处理单个消息', () => {
       const messages: GroupedMessage[] = [
-        { type: 'user', content: 'Single question' },
+        { role: 'user', content: 'Single question' },
       ];
       const groups = groupMessagesByApiRound(messages);
       expect(groups.length).toBe(1);
@@ -121,9 +121,9 @@ describe('Compact 模块', () => {
 
     it('应该保留系统消息', () => {
       const messages: GroupedMessage[] = [
-        { type: 'system', content: 'System prompt' },
-        { type: 'user', content: 'Question' },
-        { type: 'assistant', content: 'Response' },
+        { role: 'system', content: 'System prompt' },
+        { role: 'user', content: 'Question' },
+        { role: 'assistant', content: 'Response' },
       ];
       const groups = groupMessagesByApiRound(messages);
       expect(groups.length).toBe(1);

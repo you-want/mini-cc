@@ -5,8 +5,7 @@
  */
 
 export interface Message {
-  type?: 'user' | 'assistant' | 'system' | 'tool';
-  role?: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string | any[];
   [key: string]: any;
 }
@@ -28,7 +27,7 @@ export function groupMessagesByApiRound(messages: Message[]): Message[][] {
   
   for (const message of messages) {
     // 如果遇到用户消息且当前组不为空，开始新的一组
-    if (message.type === 'user' && currentGroup.length > 0) {
+    if (message.role === 'user' && currentGroup.length > 0) {
       groups.push(currentGroup);
       currentGroup = [];
     }
