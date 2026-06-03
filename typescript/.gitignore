@@ -4,4 +4,4 @@ dist
 .ai_memory
 bin/
 .mini-cc/
-docs
+docs/log/
