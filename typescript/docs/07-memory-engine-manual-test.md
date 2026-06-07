@@ -4,7 +4,7 @@
 
 ```bash
 # 1. 进入项目目录
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /claude-code/mini-cc/typescript
 
 # 2. 安装依赖
 npm install

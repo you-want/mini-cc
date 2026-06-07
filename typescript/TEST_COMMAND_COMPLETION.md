@@ -39,7 +39,7 @@
 
 ### 1. 启动应用
 ```bash
-cd /Users/rain9/github/claude-code/mini-cc/typescript
+cd /claude-code/mini-cc/typescript
 npm run dev
 ```
 
