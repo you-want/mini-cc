@@ -1,42 +1,52 @@
-from typing import Any
-from pydantic import BaseModel
+"""
+工具基类 (base.py)
+================
 
-class BaseTool:
+定义了工具的基础结构和注册机制。
+这是 AI 能够调用外部工具的核心。
+"""
+
+from typing import Callable, Any, List
+from dataclasses import dataclass
+
+@dataclass
+class Tool:
     """
-    所有工具的基类。
-    在 Python 中，我们可以利用 Pydantic 来定义工具的参数 schema，
-    这样可以自动生成大模型（如 OpenAI 接口）需要的 JSON Schema 格式。
+    工具的基础数据结构。
+    
+    每个工具包含：
+    - name: 工具名称（用于大模型识别）
+    - description: 工具描述（大模型靠这个决定是否调用）
+    - func: 实际执行的函数
+    - input_schema: 输入参数的 JSON Schema
     """
-    # 工具名称（只能包含字母、数字、下划线和连字符，最大长度 64）
-    name: str = ""
-    # 工具描述（越详细越好，这是大模型决定是否调用它的唯一依据）
-    description: str = ""
+    name: str
+    description: str
+    func: Callable[..., Any]
+    input_schema: dict
+
+# 全局工具列表（所有注册的工具都会放在这里）
+tools: List[Tool] = []
+
+def register_tool(name: str, description: str, input_schema: dict = None):
+    """
+    工具注册装饰器。
     
-    # 使用 Pydantic 的 BaseModel 来定义参数结构
-    args_schema: type[BaseModel] = BaseModel
-    
-    async def execute(self, **kwargs) -> str:
-        """执行工具逻辑，必须由子类实现"""
-        raise NotImplementedError("子类必须实现 execute 方法")
-        
-    def to_openai_schema(self) -> dict:
-        """
-        将工具定义转换为 OpenAI/兼容接口所需的 tools 格式
-        这是大模型能“看懂”你有哪些工具的关键。
-        """
-        # Pydantic 提供了一个非常方便的 model_json_schema() 方法
-        # 它可以直接把 Python 的数据类转成符合 JSON Schema 规范的字典
-        schema = self.args_schema.model_json_schema()
-        
-        # 移除一些大模型 API 可能不支持的额外字段（比如 Pydantic 自动生成的 title）
-        if "title" in schema:
-            del schema["title"]
-            
-        return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": schema
-            }
-        }
+    使用方式：
+    @register_tool(
+        name="file_read",
+        description="读取文件内容",
+        input_schema={"file_path": {"type": "string"}}
+    )
+    def file_read(file_path: str) -> str:
+        # ... 实现逻辑
+    """
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        tools.append(Tool(
+            name=name,
+            description=description,
+            func=func,
+            input_schema=input_schema or {}
+        ))
+        return func
+    return decorator
