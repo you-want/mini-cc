@@ -1,0 +1,19 @@
+services:
+  mini-cc-mcp-server:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - WORKSPACE_DIR=/workspace
+      - NODE_ENV=production
+    volumes:
+      # 挂载本地工作目录，让容器内的工具可以操作宿主机的文件
+      - ./:/workspace
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

@@ -48,7 +48,8 @@
     "react": "^17.0.2",
     "sharp": "^0.34.5",
     "term-img": "^7.1.0",
-    "terminal-image": "^4.3.0"
+    "terminal-image": "^4.3.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/inquirer": "^8.2.10",
