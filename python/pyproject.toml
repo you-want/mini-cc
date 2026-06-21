@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mini-cc-python"
-version = "1.0.1"
+version = "1.1.0"
 description = "A lightweight AI pair programming agent in Python (Compatible with @you-want/mini-cc)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -30,7 +30,9 @@ dependencies = [
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
     "aiofiles>=23.0.0",
-    "colorama>=0.4.6"
+    "colorama>=0.4.6",
+    "rich>=13.0.0",
+    "prompt_toolkit>=3.0.0",
 ]
 
 [project.urls]
@@ -38,8 +40,12 @@ Homepage = "https://mini-cc.raingpt.top/"
 Repository = "https://github.com/you-want/mini-cc"
 
 [project.scripts]
-mini-cc = "mini_cc.main:run_cli"
+mini-cc = "mini_cc.cli.main:run_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["mini_cc*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
