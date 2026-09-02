@@ -1,5 +1,5 @@
 """
-mini-cc Python 版入口文件
+mini-cc-py Python 版入口文件
 
 这是 AI 编程助手的起点。
 委托给 cli.main 模块实现完整的 CLI 功能。

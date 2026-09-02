@@ -2,7 +2,7 @@
 CLI 入口 (main.py)
 =================
 
-mini-cc 的命令行入口。
+mini-cc-py 的命令行入口。
 负责：
 1. 解析命令行参数（--provider, --model, --verbose）
 2. 初始化配置和 Provider
@@ -10,10 +10,10 @@ mini-cc 的命令行入口。
 4. 运行交互式对话循环
 
 使用方式：
-    mini-cc                         # 使用默认配置启动
-    mini-cc --provider anthropic    # 使用 Anthropic Claude
-    mini-cc --model gpt-4o-mini     # 指定模型
-    mini-cc --verbose               # 显示详细日志
+    mini-cc-py                         # 使用默认配置启动
+    mini-cc-py --provider anthropic    # 使用 Anthropic Claude
+    mini-cc-py --model gpt-4o-mini     # 指定模型
+    mini-cc-py --verbose               # 显示详细日志
 """
 
 import argparse
@@ -38,9 +38,9 @@ def parse_args() -> argparse.Namespace:
     --verbose: 显示详细的调试日志
     """
     parser = argparse.ArgumentParser(
-        prog="mini-cc",
-        description="mini-cc - AI 编程助手 (Python 版)",
-        epilog="示例：mini-cc --provider openai --model gpt-4o"
+        prog="mini-cc-py",
+        description="mini-cc-py - AI 编程助手 (Python 版)",
+        epilog="示例：mini-cc-py --provider openai --model gpt-4o"
     )
     parser.add_argument(
         "--provider",
@@ -147,7 +147,7 @@ async def main_loop(args: argparse.Namespace) -> None:
         )
     except Exception as e:
         console.print(f"[error]初始化 LLM Provider 失败: {e}[/error]")
-        console.print("[info]提示：请先运行 `mini-cc` 完成首次配置，或设置环境变量 OPENAI_API_KEY / ANTHROPIC_API_KEY[/info]")
+        console.print("[info]提示：请先运行 `mini-cc-py` 完成首次配置，或设置环境变量 OPENAI_API_KEY / ANTHROPIC_API_KEY[/info]")
         return
     
     agent = Agent(provider)

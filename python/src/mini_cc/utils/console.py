@@ -26,7 +26,7 @@ console = Console(theme=custom_theme)
 
 def print_welcome() -> None:
     """打印欢迎信息"""
-    welcome_text = """[bold cyan]mini-cc[/bold cyan] - AI 编程助手 (Python 版)
+    welcome_text = """[bold cyan]mini-cc-py[/bold cyan] - AI 编程助手 (Python 版)
 
 [dim]命令:[/dim]
   [bold yellow]/help[/bold yellow]   查看帮助

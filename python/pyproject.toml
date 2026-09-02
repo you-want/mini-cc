@@ -40,7 +40,7 @@ Homepage = "https://mini-cc.raingpt.top/"
 Repository = "https://github.com/you-want/mini-cc"
 
 [project.scripts]
-mini-cc = "mini_cc.cli.main:run_cli"
+mini-cc-py = "mini_cc.cli.main:run_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
